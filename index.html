@@ -27,7 +27,7 @@
             background-color: #111827; /* Dark background fallback */
         }
         
-        /* --- NEW: Allow line breaks in Bio --- */
+        /* --- Allow line breaks in Bio --- */
         #about-bio {
             white-space: pre-line;
         }
@@ -44,7 +44,7 @@
 
         /* --- Glassmorphism Effect for Sections --- */
         .content-section {
-            background: rgba(50, 53, 59, 0.02); /* Dark background with opacity */
+            background: rgba(17, 24, 39, 0.8); /* Dark background with opacity */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -113,8 +113,13 @@
         /* --- Back to Top Button --- */
         #back-to-top {
             position: fixed;
-            bottom: 2rem;
-            right: 2rem;
+            /* MOBILE-FIRST: Closer to corner on mobile */
+            bottom: 1rem; 
+            right: 1rem;
+            /* md: Larger screens */
+            md:bottom: 2rem;
+            md:right: 2rem;
+            
             z-index: 50;
             opacity: 0;
             transform: translateY(20px);
@@ -135,13 +140,19 @@
 
     <!-- Header / Navigation -->
     <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-gray-900/50 backdrop-blur-md border-b border-gray-700/50 transition-all duration-300">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div id="nav-name" class="text-2xl font-bold text-white"></div>
-            <div class="space-x-4 md:space-x-6">
+        <nav class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+            <div id="nav-name" class="text-xl md:text-2xl font-bold text-white"></div>
+            <!-- MOBILE-FIRST: Hide links on extra-small screens, show from 'sm' up -->
+            <div class="hidden sm:flex space-x-4 md:space-x-6">
                 <a href="#about" class="text-gray-300 hover:text-white transition duration-300">About</a>
                 <a href="#skills" class="text-gray-300 hover:text-white transition duration-300">Skills</a>
                 <a href="#portfolio" class="text-gray-300 hover:text-white transition duration-300">Portfolio</a>
                 <a href="#contact" class="text-gray-300 hover:text-white transition duration-300">Contact</a>
+            </div>
+            <!-- MOBILE-ONLY: Links for small screens (could be a hamburger menu) -->
+            <div class="sm:hidden space-x-3">
+                <a href="#skills" class="text-gray-300 hover:text-white transition duration-300">Skills</a>
+                <a href="#portfolio" class="text-gray-300 hover:text-white transition duration-300">Portfolio</a>
             </div>
         </nav>
     </header>
@@ -153,34 +164,41 @@
         <section id="home" class="h-screen relative flex items-center justify-center text-center px-4 overflow-hidden z-1">
             <!-- Background Video -->
             <video autoplay loop muted playsinline class="absolute top-0 left-0 w-full h-full object-cover z-[-1]">
-                <source src="D:\portfolio\13127658_1920_1080_24fps.mp4" type="video/mp4">
+                <source src="13127658_1920_1080_24fps.mp4" type="video/mp4">
             </video>
             <!-- Overlay -->
             <div class="absolute inset-0 bg-black/50 z-0"></div>
             
             <div class="relative z-10 animate-on-scroll zoom-in is-visible">
-                <h1 id="hero-greeting" class="text-5xl md:text-7xl font-black text-white drop-shadow-lg mb-4"></h1>
-                <h2 id="hero-name" class="text-3xl md:text-5xl font-bold text-white/90 drop-shadow-lg mb-8"></h2>
-                <p id="hero-title" class="text-xl md:text-2xl text-gray-200 drop-shadow-md max-w-2xl mx-auto"></p>
+                <!-- MOBILE-FIRST: text-4xl base, md:text-7xl for larger screens -->
+                <h1 id="hero-greeting" class="text-4xl md:text-7xl font-black text-white drop-shadow-lg mb-4"></h1>
+                <!-- MOBILE-FIRST: text-2xl base, md:text-5xl for larger screens -->
+                <h2 id="hero-name" class="text-2xl md:text-5xl font-bold text-white/90 drop-shadow-lg mb-8"></h2>
+                <!-- MOBILE-FIRST: text-lg base, md:text-2xl for larger screens -->
+                <p id="hero-title" class="text-lg md:text-2xl text-gray-200 drop-shadow-md max-w-2xl mx-auto"></p>
             </div>
         </section>
 
         <!-- About Me Section -->
-        <section id="about" class="py-24">
-            <div class="container mx-auto px-6 max-w-4xl">
-                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll fade-in-left">
-                    <h2 class="text-4xl font-bold text-center mb-8">About Me</h2>
-                    <!-- This paragraph now supports line breaks -->
-                    <p id="about-bio" class="text-lg md:text-xl text-gray-300 leading-relaxed text-center"></p>
+        <section id="about" class="py-20 md:py-24">
+            <div class="container mx-auto px-4 md:px-6 max-w-4xl">
+                <!-- MOBILE-FIRST: p-6 base, md:p-12 for larger screens -->
+                <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-left">
+                    <!-- MOBILE-FIRST: text-3xl base, md:text-4xl for larger screens -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">About Me</h2>
+                    <!-- MOBILE-FIRST: text-base base, md:text-xl for larger screens -->
+                    <p id="about-bio" class="text-base md:text-xl text-gray-300 leading-relaxed text-center"></p>
                 </div>
             </div>
         </section>
 
         <!-- Skills Section -->
-        <section id="skills" class="py-24">
-            <div class="container mx-auto px-6 max-w-5xl">
-                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll fade-in-right">
-                    <h2 class="text-4xl font-bold text-center mb-12">My Skills</h2>
+        <section id="skills" class="py-20 md:py-24">
+            <div class="container mx-auto px-4 md:px-6 max-w-5xl">
+                <!-- MOBILE-FIRST: p-6 base, md:p-12 for larger screens -->
+                <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-right">
+                    <!-- MOBILE-FIRST: text-3xl base, md:text-4xl for larger screens -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-center mb-10 md:mb-12">My Skills</h2>
                     <div id="skills-container" class="space-y-6">
                         <!-- Animated skill bars will be dynamically injected here -->
                     </div>
@@ -189,12 +207,15 @@
         </section>
 
         <!-- Portfolio Section -->
-        <section id="portfolio" class="py-24">
-            <div class="container mx-auto px-6 max-w-7xl">
-                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll zoom-in">
-                    <h2 class="text-4xl font-bold text-center mb-4">Featured Photography</h2>
-                    <p class="text-center text-lg text-gray-400 mb-10">Click any photo to open the full gallery.</p>
-                    <div id="portfolio-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section id="portfolio" class="py-20 md:py-24">
+            <div class="container mx-auto px-4 md:px-6 max-w-7xl">
+                <!-- MOBILE-FIRST: p-6 base, md:p-12 for larger screens -->
+                <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll zoom-in">
+                    <!-- MOBILE-FIRST: text-3xl base, md:text-4xl for larger screens -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Featured Photography</h2>
+                    <p class="text-center text-base md:text-lg text-gray-400 mb-10">Click any photo to open the full gallery.</p>
+                    <!-- MOBILE-FIRST: grid-cols-1 is default, sm:grid-cols-2 for small+, lg:grid-cols-3 for large+ -->
+                    <div id="portfolio-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <!-- Portfolio items will be dynamically injected here -->
                     </div>
                 </div>
@@ -202,16 +223,20 @@
         </section>
 
         <!-- Contact Section -->
-        <section id="contact" class="py-24">
-            <div class="container mx-auto px-6 max-w-3xl">
-                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll fade-in-up text-center">
-                    <h2 class="text-4xl font-bold text-center mb-8">Get In Touch</h2>
-                    <p class="text-lg text-gray-300 mb-10">
+        <section id="contact" class="py-20 md:py-24">
+            <div class="container mx-auto px-4 md:px-6 max-w-3xl">
+                <!-- MOBILE-FIRST: p-6 base, md:p-12 for larger screens -->
+                <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-up text-center">
+                    <!-- MOBILE-FIRST: text-3xl base, md:text-4xl for larger screens -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Get In Touch</h2>
+                    <!-- MOBILE-FIRST: text-base base, md:text-lg for larger screens -->
+                    <p class="text-base md:text-lg text-gray-300 mb-10">
                         I'm always open to new opportunities and collaborations.
                     </p>
                     
                     <!-- Dynamic LinkedIn Button -->
-                    <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
+                    <!-- MOBILE-FIRST: text-base base, md:text-lg for larger screens -->
+                    <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-blue-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6"><path d="M19.63 3.001H4.37C3.612 3.001 3 3.611 3 4.37v15.26C3 20.388 3.612 21 4.37 21h15.26c.758 0 1.37-.611 1.37-1.37V4.37c0-.759-.612-1.369-1.37-1.369ZM8.09 18.391H5.48V8.61h2.61v9.781ZM6.78 7.391c-.826 0-1.49-.665-1.49-1.49 0-.825.664-1.49 1.49-1.49.825 0 1.49.665 1.49 1.49 0 .825-.665 1.49-1.49 1.49Zm11.61 11H15.8v-4.662c0-1.111-.02-2.541-1.549-2.541-1.55 0-1.788 1.21-1.788 2.46v4.743H9.86V8.61h2.502v1.147h.036c.348-.659 1.199-1.35 2.468-1.35 2.64 0 3.126 1.738 3.126 4.001v4.983Z" /></svg>
                         Connect on LinkedIn
                     </a>
@@ -219,7 +244,7 @@
                     <div class="flex justify-center items-center gap-6 mt-12">
                         <a id="contact-email" href="#" class="text-gray-400 hover:text-blue-500 transition duration-300 animate-on-scroll fade-in-up" style="transition-delay: 300ms;">
                             <!-- Email icon -->
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 md:w-8 md:h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                         </a>
                         <div id="github-link-container" class="animate-on-scroll fade-in-up" style="transition-delay: 400ms;">
                             <!-- GitHub link will be injected here if it exists -->
@@ -239,13 +264,14 @@
     <!-- Full Screen Gallery Page -->
     <section id="gallery-page">
         <header class="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md">
-            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <h2 class="text-2xl font-bold text-white">Full Gallery</h2>
+            <div class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl md:text-2xl font-bold text-white">Full Gallery</h2>
                 <button id="gallery-close-btn" class="text-white text-4xl leading-none hover:text-gray-300 transition">&times;</button>
             </div>
         </header>
-        <div class="container mx-auto p-6">
-            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="container mx-auto p-4 md:p-6">
+            <!-- MOBILE-FIRST: grid-cols-1 is default, sm:grid-cols-2 for small+, lg:grid-cols-3 for large+ -->
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <!-- Full gallery images will be injected here -->
             </div>
         </div>
@@ -253,7 +279,7 @@
 
     <!-- Back to Top Button -->
     <a href="#home" id="back-to-top" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition duration-300" aria-label="Back to top">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
         </svg>
     </a>
@@ -281,11 +307,12 @@
                 ]
             },
             about: {
-                // <!-- NEW: Use backticks (`) for multi-line strings -->
+                // Use backticks (`) for multi-line strings
                 bio: `I am currently pursuing a Bachelor of Computer Applications (BCA) at the Asian School of Business, set to graduate in 2026. With a strong foundation in programming languages such as C, C++, HTML, CSS, and JavaScript, I am passionate about developing efficient and innovative solutions.
                 
                 Additionally, I have a growing interest in cybersecurity, which complements my technical skills and enhances my understanding of safe coding practices. I am eager to apply my knowledge in real-world projects and contribute to a dynamic team in the tech industry.
-                
+
+
                 I am always looking to learn and connect with professionals in the field.`
             },
             // Add your skills and proficiency (0-100)
@@ -300,17 +327,18 @@
                 { name: "Operating System", level: "94%" },
                 { name: "Photography, Video Editing", level: "97%" }
             ],
+
             // Add links to your photos. (6 for the homepage, all will show in gallery)
             portfolio: [
-                { imageUrl: "images\Diablo#realmeportraitmasteracademy12-04-2022 (1).jpg", alt: "Diablo" },
-                { imageUrl: "images\Cat#realmeportraitmasteracademy04-03-2023.jpg", alt: "Cat" },
-                { imageUrl: "images\Look into the eyesThe best part of your life is once you were also a kid#realmeportraitmasterac.jpg", alt: "Look into the Eyes" },
-                { imageUrl: "images\Some clicks of Athlema at @asianeducationgroup.jpg", alt: "Athleema" },
-                { imageUrl: "images\🗺️#realme12proplus.jpg", alt: "It's all about perspective" },
-                { imageUrl: "images\If there is no shoulder to cry on,There is definitely a Floor to kneel and pray.jpg", alt: "Dargah" },
+                { imageUrl: "images/photo1.jpg", alt: "A beautiful landscape photo" },
+                { imageUrl: "images/photo2.jpg", alt: "A striking portrait" },
+                { imageUrl: "images/photo3.jpg", alt: "Close-up of a flower" },
+                { imageUrl: "images/photo4.jpg", alt: "Modern architecture shot" },
+                { imageUrl: "images/photo5.jpg", alt: "Candid street photography" },
+                { imageUrl: "images/photo6.jpg", alt: "An abstract light painting" },
                 // Add more photos here for the full gallery
-                { imageUrl: "https://placehold.co/600x400/e67e22/ffffff?text=Travel", alt: "Travel photo" },
-                { imageUrl: "https://placehold.co/600x400/34495e/ffffff?text=Night+Sky", alt: "Night sky photo" },
+                { imageUrl: "images/photo7.jpg", alt: "Travel photo" },
+                { imageUrl: "images/photo8.jpg", alt: "Night sky photo" },
             ],
             contact: {
                 email: "mohdhumama5@gmail.com"
@@ -319,7 +347,6 @@
                 // Your LinkedIn URL is the most important here
                 linkedin: "https://www.linkedin.com/in/humam18/",
                 github: "https://github.com/humamaziz"
-                // Add more socials if you like, but they won't be as prominent
             }
         };
 
@@ -339,9 +366,10 @@
               scaleMobile: 1.00,
               color: 0x3b82f6, // This is Tailwind's 'blue-600'
               backgroundColor: 0x111827, // This is Tailwind's 'gray-900'
-              points: 10.00,       // Adjust number of points
-              maxDistance: 20.00,  // Adjust distance between points
-              spacing: 15.00       // Adjust spacing
+              // MOBILE-OPTIMIZED: Reduced points, increased spacing
+              points: 8.00,       
+              maxDistance: 22.00,  
+              spacing: 18.00       
             });
             
             // --- Populate text content ---
@@ -363,7 +391,8 @@
                 githubLink.rel = 'noopener noreferrer';
                 githubLink.className = 'text-gray-400 hover:text-blue-500 transition duration-300';
                 githubLink.setAttribute('aria-label', 'GitHub');
-                githubLink.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-8 h-8"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.74 15.28c-.412 0-.748-.336-.748-.748v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748Zm-2.221-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm-3.374 2.998v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748-.412 0-.748-.336-.748-.748Zm-2.22-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm11.31-4.544v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm2.221 3.018c0 .413-.335.748-.748.748v-4.544c0-.413.335-.748.748-.748.412 0 .748.335.748.748v4.544Zm2.22-3.018v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm-2.22-5.292a.748.748 0 0 0-.748.748v2.456c0 .413.335.748.748.748.413 0 .748-.335.748-.748V6.69c0-.412-.335-.748-.748-.748Z" clip-rule="evenodd" /></svg>`;
+                // MOBILE-FIRST: w-7 h-7 base, md:w-8 md:h-8 for larger screens
+                githubLink.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-7 h-7 md:w-8 md:h-8"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.74 15.28c-.412 0-.748-.336-.748-.748v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748Zm-2.221-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm-3.374 2.998v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748-.412 0-.748-.336-.748-.748Zm-2.22-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm11.31-4.544v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm2.221 3.018c0 .413-.335.748-.748.748v-4.544c0-.413.335-.748.748-.748.412 0 .748.335.748.748v4.544Zm2.22-3.018v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm-2.22-5.292a.748.748 0 0 0-.748.748v2.456c0 .413.335.748.748.748.413 0 .748-.335.748-.748V6.69c0-.412-.335-.748-.748-.748Z" clip-rule="evenodd" /></svg>`;
                 githubContainer.appendChild(githubLink);
             }
 
@@ -375,7 +404,8 @@
                 skillElement.style.transitionDelay = `${index * 100}ms`; // Staggered animation
                 skillElement.innerHTML = `
                     <div class="flex justify-between mb-1">
-                        <span class="text-lg font-medium text-gray-200">${skill.name}</span>
+                        <!-- MOBILE-FIRST: text-base base, md:text-lg for larger screens -->
+                        <span class="text-base md:text-lg font-medium text-gray-200">${skill.name}</span>
                         <span class="text-sm font-medium text-gray-400">${skill.level}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2.5">
@@ -393,14 +423,15 @@
                 portfolioItem.className = 'group relative rounded-lg overflow-hidden shadow-xl cursor-pointer animate-on-scroll zoom-in';
                 portfolioItem.style.transitionDelay = `${index * 100}ms`; // Staggered animation
                 portfolioItem.innerHTML = `
+                    <!-- MOBILE-FIRST: h-64 base, md:h-72 for larger screens -->
                     <img 
                         src="${item.imageUrl}" 
                         alt="${item.alt}" 
-                        class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
+                        class="w-full h-64 md:h-72 object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/333/999?text=Image+Not+Found';this.alt='Error loading image'"
                     >
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-4">
-                        <p class="text-white text-xl font-bold text-center">${item.alt}</p>
+                        <p class="text-white text-lg md:text-xl font-bold text-center">${item.alt}</p>
                     </div>
                 `;
                 // Add click event to open full gallery
@@ -414,14 +445,15 @@
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'group relative rounded-lg overflow-hidden shadow-xl';
                 galleryItem.innerHTML = `
+                    <!-- MOBILE-FIRST: h-72 base, md:h-80 for larger screens -->
                     <img 
                         src="${item.imageUrl}" 
                         alt="${item.alt}" 
-                        class="w-full h-80 object-cover"
+                        class="w-full h-72 md:h-80 object-cover"
                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/333/999?text=Image+Not+Found';this.alt='Error loading image'"
-                    >
+_                    >
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
-                        <p class="text-white text-lg font-bold">${item.alt}</p>
+                        <p class="text-white text-base md:text-lg font-bold">${item.alt}</p>
                     </div>
                 `;
                 galleryGrid.appendChild(galleryItem);
@@ -530,4 +562,3 @@
 
 </body>
 </html>
-

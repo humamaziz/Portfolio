@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dynamic Portfolio</title>
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- 3. Load Vanta.js dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js"></script>
+
+    <!-- 4. Custom Styles and Animations -->
+    <style>
+        :root {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark background fallback */
+        }
+        
+        /* --- NEW: Allow line breaks in Bio --- */
+        #about-bio {
+            white-space: pre-line;
+        }
+
+        /* --- Vanta.js Background --- */
+        #vanta-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Base layer for the entire page */
+        }
+
+        /* --- Glassmorphism Effect for Sections --- */
+        .content-section {
+            background: rgba(50, 53, 59, 0.02); /* Dark background with opacity */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* --- Dynamic Header Shadow --- */
+        header.scrolled {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            border-bottom-color: transparent;
+        }
+
+        /* --- Scroll Animation Classes --- */
+        .animate-on-scroll {
+            opacity: 0;
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in-up {
+            transform: translateY(30px);
+        }
+        .fade-in-left {
+            transform: translateX(-30px);
+        }
+        .fade-in-right {
+            transform: translateX(30px);
+        }
+        .zoom-in {
+            transform: scale(0.95);
+        }
+
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0) translateX(0) scale(1);
+        }
+
+        /* --- Skill Bar Animation --- */
+        .skill-bar-inner {
+            width: 0;
+            transition: width 1s ease-out;
+        }
+        .is-visible .skill-bar-inner {
+            /* Width is set dynamically by JS */
+        }
+
+        /* --- Full Screen Gallery Page --- */
+        #gallery-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            background-color: #111827;
+            overflow-y: auto;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+        #gallery-page.is-open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* --- Back to Top Button --- */
+        #back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #back-to-top.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="text-gray-100">
+
+    <!-- Vanta.js Animated Background Target -->
+    <div id="vanta-bg"></div>
+
+    <!-- Header / Navigation -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-gray-900/50 backdrop-blur-md border-b border-gray-700/50 transition-all duration-300">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div id="nav-name" class="text-2xl font-bold text-white"></div>
+            <div class="space-x-4 md:space-x-6">
+                <a href="#about" class="text-gray-300 hover:text-white transition duration-300">About</a>
+                <a href="#skills" class="text-gray-300 hover:text-white transition duration-300">Skills</a>
+                <a href="#portfolio" class="text-gray-300 hover:text-white transition duration-300">Portfolio</a>
+                <a href="#contact" class="text-gray-300 hover:text-white transition duration-300">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10">
+
+        <!-- Hero Section -->
+        <section id="home" class="h-screen relative flex items-center justify-center text-center px-4 overflow-hidden z-1">
+            <!-- Background Video -->
+            <video autoplay loop muted playsinline class="absolute top-0 left-0 w-full h-full object-cover z-[-1]">
+                <source src="D:\portfolio\13127658_1920_1080_24fps.mp4" type="video/mp4">
+            </video>
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-black/50 z-0"></div>
+            
+            <div class="relative z-10 animate-on-scroll zoom-in is-visible">
+                <h1 id="hero-greeting" class="text-5xl md:text-7xl font-black text-white drop-shadow-lg mb-4"></h1>
+                <h2 id="hero-name" class="text-3xl md:text-5xl font-bold text-white/90 drop-shadow-lg mb-8"></h2>
+                <p id="hero-title" class="text-xl md:text-2xl text-gray-200 drop-shadow-md max-w-2xl mx-auto"></p>
+            </div>
+        </section>
+
+        <!-- About Me Section -->
+        <section id="about" class="py-24">
+            <div class="container mx-auto px-6 max-w-4xl">
+                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll fade-in-left">
+                    <h2 class="text-4xl font-bold text-center mb-8">About Me</h2>
+                    <!-- This paragraph now supports line breaks -->
+                    <p id="about-bio" class="text-lg md:text-xl text-gray-300 leading-relaxed text-center"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="py-24">
+            <div class="container mx-auto px-6 max-w-5xl">
+                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll fade-in-right">
+                    <h2 class="text-4xl font-bold text-center mb-12">My Skills</h2>
+                    <div id="skills-container" class="space-y-6">
+                        <!-- Animated skill bars will be dynamically injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="py-24">
+            <div class="container mx-auto px-6 max-w-7xl">
+                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll zoom-in">
+                    <h2 class="text-4xl font-bold text-center mb-4">Featured Photography</h2>
+                    <p class="text-center text-lg text-gray-400 mb-10">Click any photo to open the full gallery.</p>
+                    <div id="portfolio-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Portfolio items will be dynamically injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-24">
+            <div class="container mx-auto px-6 max-w-3xl">
+                <div class="content-section rounded-2xl p-8 md:p-12 shadow-2xl animate-on-scroll fade-in-up text-center">
+                    <h2 class="text-4xl font-bold text-center mb-8">Get In Touch</h2>
+                    <p class="text-lg text-gray-300 mb-10">
+                        I'm always open to new opportunities and collaborations.
+                    </p>
+                    
+                    <!-- Dynamic LinkedIn Button -->
+                    <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6"><path d="M19.63 3.001H4.37C3.612 3.001 3 3.611 3 4.37v15.26C3 20.388 3.612 21 4.37 21h15.26c.758 0 1.37-.611 1.37-1.37V4.37c0-.759-.612-1.369-1.37-1.369ZM8.09 18.391H5.48V8.61h2.61v9.781ZM6.78 7.391c-.826 0-1.49-.665-1.49-1.49 0-.825.664-1.49 1.49-1.49.825 0 1.49.665 1.49 1.49 0 .825-.665 1.49-1.49 1.49Zm11.61 11H15.8v-4.662c0-1.111-.02-2.541-1.549-2.541-1.55 0-1.788 1.21-1.788 2.46v4.743H9.86V8.61h2.502v1.147h.036c.348-.659 1.199-1.35 2.468-1.35 2.64 0 3.126 1.738 3.126 4.001v4.983Z" /></svg>
+                        Connect on LinkedIn
+                    </a>
+                    
+                    <div class="flex justify-center items-center gap-6 mt-12">
+                        <a id="contact-email" href="#" class="text-gray-400 hover:text-blue-500 transition duration-300 animate-on-scroll fade-in-up" style="transition-delay: 300ms;">
+                            <!-- Email icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                        </a>
+                        <div id="github-link-container" class="animate-on-scroll fade-in-up" style="transition-delay: 400ms;">
+                            <!-- GitHub link will be injected here if it exists -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-gray-400 relative z-10">
+        <p>&copy; <span id="footer-year"></span> <span id="footer-name"></span>. All rights reserved.</p>
+    </footer>
+
+    <!-- Full Screen Gallery Page -->
+    <section id="gallery-page">
+        <header class="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-white">Full Gallery</h2>
+                <button id="gallery-close-btn" class="text-white text-4xl leading-none hover:text-gray-300 transition">&times;</button>
+            </div>
+        </header>
+        <div class="container mx-auto p-6">
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Full gallery images will be injected here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to Top Button -->
+    <a href="#home" id="back-to-top" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition duration-300" aria-label="Back to top">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+        </svg>
+    </a>
+
+
+    <!-- 
+    =====================================================================
+    === YOUR WEBSITE DATA - EDIT EVERYTHING BELOW THIS LINE ===
+    =====================================================================
+    -->
+    <script>
+        
+        // --- 1. YOUR DATA ---
+        // Edit this object to update your website content.
+        const portfolioData = {
+            name: "Mohd Humam Aziz Khan",
+            hero: {
+                greeting: "Hello, I'm",
+                // This title will be animated with a typing effect
+                titles: [
+                    "BCA Student",
+                    "Developer",
+                    "Photographer",
+                    "Aspiring IT Professional"
+                ]
+            },
+            about: {
+                // <!-- NEW: Use backticks (`) for multi-line strings -->
+                bio: `I am currently pursuing a Bachelor of Computer Applications (BCA) at the Asian School of Business, set to graduate in 2026. With a strong foundation in programming languages such as C, C++, HTML, CSS, and JavaScript, I am passionate about developing efficient and innovative solutions.
+                
+                Additionally, I have a growing interest in cybersecurity, which complements my technical skills and enhances my understanding of safe coding practices. I am eager to apply my knowledge in real-world projects and contribute to a dynamic team in the tech industry.
+                
+                I am always looking to learn and connect with professionals in the field.`
+            },
+            // Add your skills and proficiency (0-100)
+            skills: [
+                { name: "DSA", level: "87%" },
+                { name: "Cybersecurity", level: "82%" },
+                { name: "Computer Artitecture", level: "75%" },
+                { name: "HTML, CSS, C++, C", level: "95%" },
+                { name: "ERP System", level: "86%" },
+                { name: "Object Oriented Programming", level: "74%" },
+                { name: "Git & GitHub", level: "89%" },
+                { name: "Operating System", level: "94%" },
+                { name: "Photography, Video Editing", level: "97%" }
+            ],
+            // Add links to your photos. (6 for the homepage, all will show in gallery)
+            portfolio: [
+                { imageUrl: "images\Diablo#realmeportraitmasteracademy12-04-2022 (1).jpg", alt: "Diablo" },
+                { imageUrl: "images\Cat#realmeportraitmasteracademy04-03-2023.jpg", alt: "Cat" },
+                { imageUrl: "images\Look into the eyesThe best part of your life is once you were also a kid#realmeportraitmasterac.jpg", alt: "Look into the Eyes" },
+                { imageUrl: "images\Some clicks of Athlema at @asianeducationgroup.jpg", alt: "Athleema" },
+                { imageUrl: "images\🗺️#realme12proplus.jpg", alt: "It's all about perspective" },
+                { imageUrl: "images\If there is no shoulder to cry on,There is definitely a Floor to kneel and pray.jpg", alt: "Dargah" },
+                // Add more photos here for the full gallery
+                { imageUrl: "https://placehold.co/600x400/e67e22/ffffff?text=Travel", alt: "Travel photo" },
+                { imageUrl: "https://placehold.co/600x400/34495e/ffffff?text=Night+Sky", alt: "Night sky photo" },
+            ],
+            contact: {
+                email: "mohdhumama5@gmail.com"
+            },
+            socials: {
+                // Your LinkedIn URL is the most important here
+                linkedin: "https://www.linkedin.com/in/humam18/",
+                github: "https://github.com/humamaziz"
+                // Add more socials if you like, but they won't be as prominent
+            }
+        };
+
+        // --- 2. DYNAMIC CONTENT RENDERING & ANIMATIONS ---
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Initialize Vanta.js Background ---
+            VANTA.NET({
+              el: "#vanta-bg",
+              mouseControls: true,
+              touchControls: true,
+              gyroControls: false,
+              minHeight: 200.00,
+              minWidth: 200.00,
+              scale: 1.00,
+              scaleMobile: 1.00,
+              color: 0x3b82f6, // This is Tailwind's 'blue-600'
+              backgroundColor: 0x111827, // This is Tailwind's 'gray-900'
+              points: 10.00,       // Adjust number of points
+              maxDistance: 20.00,  // Adjust distance between points
+              spacing: 15.00       // Adjust spacing
+            });
+            
+            // --- Populate text content ---
+            document.getElementById('nav-name').textContent = portfolioData.name;
+            document.getElementById('hero-greeting').textContent = portfolioData.hero.greeting;
+            document.getElementById('hero-name').textContent = portfolioData.name;
+            document.getElementById('about-bio').textContent = portfolioData.about.bio; // This will now render line breaks
+            document.getElementById('contact-email').href = `mailto:${portfolioData.contact.email}`;
+            document.getElementById('linkedin-connect').href = portfolioData.socials.linkedin;
+            document.getElementById('footer-year').textContent = new Date().getFullYear();
+            document.getElementById('footer-name').textContent = portfolioData.name;
+
+            // --- Populate GitHub link (if it exists) ---
+            const githubContainer = document.getElementById('github-link-container');
+            if (portfolioData.socials.github) {
+                const githubLink = document.createElement('a');
+                githubLink.href = portfolioData.socials.github;
+                githubLink.target = '_blank';
+                githubLink.rel = 'noopener noreferrer';
+                githubLink.className = 'text-gray-400 hover:text-blue-500 transition duration-300';
+                githubLink.setAttribute('aria-label', 'GitHub');
+                githubLink.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-8 h-8"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.74 15.28c-.412 0-.748-.336-.748-.748v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748Zm-2.221-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm-3.374 2.998v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748-.412 0-.748-.336-.748-.748Zm-2.22-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm11.31-4.544v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm2.221 3.018c0 .413-.335.748-.748.748v-4.544c0-.413.335-.748.748-.748.412 0 .748.335.748.748v4.544Zm2.22-3.018v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm-2.22-5.292a.748.748 0 0 0-.748.748v2.456c0 .413.335.748.748.748.413 0 .748-.335.748-.748V6.69c0-.412-.335-.748-.748-.748Z" clip-rule="evenodd" /></svg>`;
+                githubContainer.appendChild(githubLink);
+            }
+
+            // --- Populate animated skill bars ---
+            const skillsContainer = document.getElementById('skills-container');
+            portfolioData.skills.forEach((skill, index) => {
+                const skillElement = document.createElement('div');
+                skillElement.className = 'animate-on-scroll fade-in-up';
+                skillElement.style.transitionDelay = `${index * 100}ms`; // Staggered animation
+                skillElement.innerHTML = `
+                    <div class="flex justify-between mb-1">
+                        <span class="text-lg font-medium text-gray-200">${skill.name}</span>
+                        <span class="text-sm font-medium text-gray-400">${skill.level}</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2.5">
+                        <div class="skill-bar-inner bg-blue-600 h-2.5 rounded-full" data-level="${skill.level}"></div>
+                    </div>
+                `;
+                skillsContainer.appendChild(skillElement);
+            });
+
+            // --- Populate featured portfolio (first 6 items) ---
+            const portfolioContainer = document.getElementById('portfolio-container');
+            const featuredPortfolio = portfolioData.portfolio.slice(0, 6);
+            featuredPortfolio.forEach((item, index) => {
+                const portfolioItem = document.createElement('div');
+                portfolioItem.className = 'group relative rounded-lg overflow-hidden shadow-xl cursor-pointer animate-on-scroll zoom-in';
+                portfolioItem.style.transitionDelay = `${index * 100}ms`; // Staggered animation
+                portfolioItem.innerHTML = `
+                    <img 
+                        src="${item.imageUrl}" 
+                        alt="${item.alt}" 
+                        class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
+                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/333/999?text=Image+Not+Found';this.alt='Error loading image'"
+                    >
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-4">
+                        <p class="text-white text-xl font-bold text-center">${item.alt}</p>
+                    </div>
+                `;
+                // Add click event to open full gallery
+                portfolioItem.addEventListener('click', openGallery);
+                portfolioContainer.appendChild(portfolioItem);
+            });
+            
+            // --- Pre-populate full gallery grid (it's hidden initially) ---
+            const galleryGrid = document.getElementById('gallery-grid');
+            portfolioData.portfolio.forEach((item) => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'group relative rounded-lg overflow-hidden shadow-xl';
+                galleryItem.innerHTML = `
+                    <img 
+                        src="${item.imageUrl}" 
+                        alt="${item.alt}" 
+                        class="w-full h-80 object-cover"
+                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/333/999?text=Image+Not+Found';this.alt='Error loading image'"
+                    >
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
+                        <p class="text-white text-lg font-bold">${item.alt}</p>
+                    </div>
+                `;
+                galleryGrid.appendChild(galleryItem);
+            });
+            
+            // Add gallery close button event
+            document.getElementById('gallery-close-btn').addEventListener('click', closeGallery);
+
+
+            // --- 3. SCROLL ANIMATION OBSERVER ---
+            const scrollElements = document.querySelectorAll('.animate-on-scroll');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        // Check if this is a skill bar and animate it
+                        const skillBar = entry.target.querySelector('.skill-bar-inner');
+                        if (skillBar) {
+                            skillBar.style.width = skillBar.getAttribute('data-level');
+                        }
+                    }
+                });
+            }, {
+                threshold: 0.1 // Trigger when 10% of the element is visible
+            });
+
+            scrollElements.forEach(el => {
+                observer.observe(el);
+            });
+
+            // --- 4. HEADER SHADOW & BACK-TO-TOP BUTTON ---
+            const header = document.getElementById('main-header');
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                // Header shadow
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+
+                // Back to top button
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.add('is-visible');
+                } else {
+                    backToTopBtn.classList.remove('is-visible');
+                }
+            });
+
+            // --- 5. HERO TYPING EFFECT ---
+            const heroTitleEl = document.getElementById('hero-title');
+            const titles = portfolioData.hero.titles;
+            let titleIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+
+            function typeEffect() {
+                const currentTitle = titles[titleIndex];
+                
+                if (isDeleting) {
+                    // Deleting
+                    heroTitleEl.textContent = currentTitle.substring(0, charIndex - 1);
+                    charIndex--;
+                    if (charIndex === 0) {
+                        isDeleting = false;
+                        titleIndex = (titleIndex + 1) % titles.length;
+                    }
+                } else {
+                    // Typing
+                    heroTitleEl.textContent = currentTitle.substring(0, charIndex + 1);
+                    charIndex++;
+                    if (charIndex === currentTitle.length) {
+                        // Pause at end
+                        setTimeout(() => { isDeleting = true; }, 2000);
+                    }
+                }
+
+                const typeSpeed = isDeleting ? 100 : 150;
+                setTimeout(typeEffect, charIndex === currentTitle.length ? 2000 : typeSpeed);
+            }
+            
+            // Start the effect
+            setTimeout(typeEffect, 1000);
+        });
+
+
+        // --- 6. GALLERY PAGE FUNCTIONS ---
+        const galleryPage = document.getElementById('gallery-page');
+        const bodyEl = document.body;
+
+        function openGallery() {
+            galleryPage.classList.add('is-open');
+            bodyEl.style.overflow = 'hidden'; // Prevent scrolling main page
+            window.scrollTo(0, 0); // Scroll gallery to top
+        }
+
+        function closeGallery() {
+            galleryPage.classList.remove('is-open');
+            bodyEl.style.overflow = 'auto'; // Re-enable scrolling
+        }
+
+    </script>
+
+</body>
+</html>
+

@@ -4,88 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Dynamic Portfolio</title>
+    <!-- 1. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Load Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     
-    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.134.0/build/three.module.js" 
-        }
-    }
-    </script>
+    <!-- 3. Load Vanta.js dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js"></script>
 
+    <!-- 4. Custom Styles and Animations -->
     <style>
-        :root { scroll-behavior: smooth; }
+        :root {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #030712; /* Even darker background */
-            overflow-x: hidden; 
+            background-color: #111827; /* Dark background fallback */
         }
-        #about-bio { white-space: pre-line; }
         
-        /* --- Three.js Background Container --- */
-        #threejs-bg {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 0; pointer-events: none; 
+        #about-bio {
+            white-space: pre-line;
         }
-        #threejs-bg canvas { display: block; }
-
-        /* Use a slightly different shade for content for better contrast */
+        #vanta-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
         .content-section {
-            background: rgba(17, 24, 39, 0.75); /* Slightly less transparent dark blue */
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        header { z-index: 50; } /* Ensure header is above content */
-        header.scrolled { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); border-bottom-color: transparent; }
+        header.scrolled {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            border-bottom-color: transparent;
+        }
 
         /* --- Scroll Animation Classes --- */
-        .animate-on-scroll { opacity: 0; transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .animate-on-scroll {
+            opacity: 0;
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
         .fade-in-up { transform: translateY(30px); }
         .fade-in-left { transform: translateX(-30px); }
         .fade-in-right { transform: translateX(30px); }
         .zoom-in { transform: scale(0.95); }
-        .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0) translateX(0) scale(1);
+        }
 
         /* --- Skill Bar Animation --- */
-        .skill-bar-inner { width: 0; transition: width 1s ease-out; }
-        .is-visible .skill-bar-inner { /* Width set by JS */ }
+        .skill-bar-inner {
+            width: 0;
+            transition: width 1s ease-out;
+        }
+        .is-visible .skill-bar-inner {
+            /* Width is set dynamically by JS */
+        }
 
-        /* --- Play Icon --- */
-        .video-play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4rem; height: 4rem; background-color: rgba(0, 0, 0, 0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0.8; transition: opacity 0.3s ease; }
-        .group:hover .video-play-icon { opacity: 1; }
-        .video-play-icon svg { width: 2rem; height: 2rem; color: white; margin-left: 3px; }
+        /* --- NEW: Play Icon for Video Thumbnails --- */
+        .video-play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 5rem; /* 80px */
+            height: 5rem; /* 80px */
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        .group:hover .video-play-icon {
+            opacity: 1;
+        }
+        .video-play-icon svg {
+            width: 3rem; /* 48px */
+            height: 3rem; /* 48px */
+            color: white;
+            margin-left: 5px; /* Nudge for visual centering */
+        }
 
-        /* --- Gallery Page --- */
-        #gallery-page { position: fixed; inset: 0; z-index: 100; background-color: #111827; overflow-y: auto; transition: opacity 0.4s ease, transform 0.4s ease; opacity: 0; transform: translateY(20px); pointer-events: none; }
-        #gallery-page.is-open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        /* --- Full Screen Gallery Page --- */
+        #gallery-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            background-color: #111827;
+            overflow-y: auto;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+        #gallery-page.is-open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
         
-        /* --- Lightbox --- */
-        #lightbox-container { position: fixed; inset: 0; z-index: 200; background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        #lightbox-container.is-open { opacity: 1; pointer-events: auto; }
-        #lightbox-content { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        #lightbox-img { max-width: 95vw; max-height: 95vh; object-fit: contain; display: none; }
-        #lightbox-video { max-width: 90vw; max-height: 90vh; display: none; }
-        .lightbox-btn { position: absolute; z-index: 210; color: white; background: rgba(0, 0, 0, 0.4); border-radius: 50%; padding: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
-        .lightbox-btn:hover { background: rgba(0, 0, 0, 0.7); transform: scale(1.1); }
-        #lightbox-close { top: 1rem; right: 1rem; }
-        #lightbox-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
-        #lightbox-next { right: 1rem; top: 50%; transform: translateY(-50%); }
+        /* --- NEW: Lightbox Styles --- */
+        #lightbox-container {
+            position: fixed;
+            inset: 0;
+            z-index: 200; /* Highest z-index */
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #lightbox-container.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #lightbox-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* The image itself, with original ratio */
+        #lightbox-img {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain; /* This respects the original ratio */
+            display: none; /* Hidden by default */
+        }
+        /* The video player */
+        #lightbox-video {
+            max-width: 90vw;
+            max-height: 90vh;
+            display: none; /* Hidden by default */
+        }
 
-        /* --- Back to Top --- */
-        #back-to-top { position: fixed; bottom: 1rem; right: 1rem; md:bottom: 2rem; md:right: 2rem; z-index: 50; opacity: 0; transform: translateY(20px); pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; }
-        #back-to-top.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        /* Lightbox Close & Nav Buttons */
+        .lightbox-btn {
+            position: absolute;
+            z-index: 210;
+            color: white;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .lightbox-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: scale(1.1);
+        }
+        #lightbox-close {
+            top: 1rem;
+            right: 1rem;
+        }
+        #lightbox-prev {
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #lightbox-next {
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* --- Back to Top Button --- */
+        #back-to-top {
+            position: fixed;
+            bottom: 1rem; 
+            right: 1rem;
+            md:bottom: 2rem;
+            md:right: 2rem;
+            z-index: 50;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #back-to-top.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="text-gray-100">
 
-    <div id="threejs-bg"></div>
+    <!-- Vanta.js Animated Background Target -->
+    <div id="vanta-bg"></div>
 
-    <header id="main-header" class="fixed top-0 left-0 right-0 bg-gray-950/30 backdrop-blur-md border-b border-gray-700/30 transition-all duration-300">
+    <!-- Header / Navigation -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-gray-900/50 backdrop-blur-md border-b border-gray-700/50 transition-all duration-300">
         <nav class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
             <div id="nav-name" class="text-xl md:text-2xl font-bold text-white"></div>
             <div class="hidden sm:flex space-x-4 md:space-x-6">
@@ -101,9 +234,11 @@
         </nav>
     </header>
 
+    <!-- Main Content -->
     <main class="relative z-10">
 
-        <section id="home" class="h-screen relative flex items-center justify-center text-center px-4 overflow-hidden"> 
+        <!-- Hero Section -->
+        <section id="home" class="h-screen relative flex items-center justify-center text-center px-4 overflow-hidden z-1">
             <video autoplay loop muted playsinline class="absolute top-0 left-0 w-full h-full object-cover z-[-1]">
                 <source src="13127658_1920_1080_24fps.mp4" type="video/mp4">
             </video>
@@ -115,6 +250,7 @@
             </div>
         </section>
 
+        <!-- About Me Section -->
         <section id="about" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-4xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-left">
@@ -124,44 +260,58 @@
             </div>
         </section>
 
+        <!-- Skills Section -->
         <section id="skills" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-5xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-right">
                     <h2 class="text-3xl md:text-4xl font-bold text-center mb-10 md:mb-12">My Skills</h2>
-                    <div id="skills-container" class="space-y-6"></div>
+                    <div id="skills-container" class="space-y-6">
+                        <!-- Animated skill bars injected here -->
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- Featured Work (Portfolio) Section -->
         <section id="portfolio" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-7xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll zoom-in">
                     <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Featured Work</h2>
-                    <p class="text-center text-base md:text-lg text-gray-400 mb-10">Click any item to view in full screen.</p>
-                    <div id="portfolio-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"></div>
+                    <p class="text-center text-base md:text-lg text-gray-400 mb-10">
+                        Click any item to view in full screen.
+                    </p>
+                    <div id="portfolio-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                        <!-- 6 Featured portfolio items will be injected here -->
+                    </div>
+                    <!-- NEW: View All Button -->
                     <div class="text-center mt-12">
-                        <button id="gallery-page-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg">View Full Gallery</button>
+                        <button id="gallery-page-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg">
+                            View Full Gallery
+                        </button>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Contact Section -->
         <section id="contact" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-3xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-up text-center">
                     <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Get In Touch</h2>
-                    <p class="text-base md:text-lg text-gray-300 mb-10">I'm always open to new opportunities and collaborations.</p>
-                    <div class="text-center"> 
-                        <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-blue-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6"><path d="M19.63 3.001H4.37C3.612 3.001 3 3.611 3 4.37v15.26C3 20.388 3.612 21 4.37 21h15.26c.758 0 1.37-.611 1.37-1.37V4.37c0-.759-.612-1.369-1.37-1.369ZM8.09 18.391H5.48V8.61h2.61v9.781ZM6.78 7.391c-.826 0-1.49-.665-1.49-1.49 0-.825.664-1.49 1.49-1.49.825 0 1.49.665 1.49 1.49 0 .825-.665 1.49-1.49 1.49Zm11.61 11H15.8v-4.662c0-1.111-.02-2.541-1.549-2.541-1.55 0-1.788 1.21-1.788 2.46v4.743H9.86V8.61h2.502v1.147h.036c.348-.659 1.199-1.35 2.468-1.35 2.64 0 3.126 1.738 3.126 4.001v4.983Z" /></svg>
-                            Connect on LinkedIn
-                        </a>
-                    </div>
+                    <p class="text-base md:text-lg text-gray-300 mb-10">
+                        I'm always open to new opportunities and collaborations.
+                    </p>
+                    <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-blue-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6"><path d="M19.63 3.001H4.37C3.612 3.001 3 3.611 3 4.37v15.26C3 20.388 3.612 21 4.37 21h15.26c.758 0 1.37-.611 1.37-1.37V4.37c0-.759-.612-1.369-1.37-1.369ZM8.09 18.391H5.48V8.61h2.61v9.781ZM6.78 7.391c-.826 0-1.49-.665-1.49-1.49 0-.825.664-1.49 1.49-1.49.825 0 1.49.665 1.49 1.49 0 .825-.665 1.49-1.49 1.49Zm11.61 11H15.8v-4.662c0-1.111-.02-2.541-1.549-2.541-1.55 0-1.788 1.21-1.788 2.46v4.743H9.86V8.61h2.502v1.147h.036c.348-.659 1.199-1.35 2.468-1.35 2.64 0 3.126 1.738 3.126 4.001v4.983Z" /></svg>
+                        Connect on LinkedIn
+                    </a>
                     <div class="flex justify-center items-center gap-6 mt-12">
                         <a id="contact-email" href="#" class="text-gray-400 hover:text-blue-500 transition duration-300 animate-on-scroll fade-in-up" style="transition-delay: 300ms;">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 md:w-8 md:h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                         </a>
-                        <div id="github-link-container" class="animate-on-scroll fade-in-up" style="transition-delay: 400ms;"></div>
+                        <div id="github-link-container" class="animate-on-scroll fade-in-up" style="transition-delay: 400ms;">
+                            <!-- GitHub link injected here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -169,38 +319,155 @@
 
     </main>
 
+    <!-- Footer -->
     <footer class="text-center py-8 text-gray-400 relative z-10">
         <p>&copy; <span id="footer-year"></span> <span id="footer-name"></span>. All rights reserved.</p>
     </footer>
 
-    <section id="gallery-page"> /* ... (Code is the same as previous version) ... */ </section>
+    <!-- Full Screen Gallery Page (Hidden by default) -->
+    <section id="gallery-page">
+        <header class="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md">
+            <div class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl md:text-2xl font-bold text-white">Full Gallery</h2>
+                <button id="gallery-close-btn" class="text-white text-4xl leading-none hover:text-gray-300 transition">&times;</button>
+            </div>
+        </header>
+        <div class="container mx-auto p-4 md:p-6">
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <!-- Full gallery (all photos & videos) will be injected here -->
+            </div>
+        </div>
+    </section>
 
-    <div id="lightbox-container"> /* ... (Code is the same as previous version) ... */ </div>
+    <!-- NEW: Lightbox Container (Hidden by default) -->
+    <div id="lightbox-container">
+        <!-- Main Content (Image or Video) -->
+        <div id="lightbox-content">
+            <img id="lightbox-img" src="" alt="Full screen portfolio image">
+            <video id="lightbox-video" src="" controls autoplay muted loop playsinline>
+                Your browser does not support the video tag.
+            </video>
+        </div>
 
+        <!-- Close Button -->
+        <button id="lightbox-close" class="lightbox-btn" aria-label="Close">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <!-- Previous Button -->
+        <button id="lightbox-prev" class="lightbox-btn" aria-label="Previous">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <!-- Next Button -->
+        <button id="lightbox-next" class="lightbox-btn" aria-label="Next">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+    </div>
+
+    <!-- Back to Top Button -->
     <a href="#home" id="back-to-top" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition duration-300" aria-label="Back to top">
         <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" /></svg>
     </a>
 
 
-    <script type="module"> // <-- *** IMPORTANT: Set script type to "module" ***
+    <!-- 
+    =====================================================================
+    === YOUR WEBSITE DATA - EDIT EVERYTHING BELOW THIS LINE ===
+    =====================================================================
+    -->
+    <script>
         
-        // --- Import Three.js ---
-        import * as THREE from 'three';
-
         // --- 1. YOUR DATA ---
+        // Edit this object to update your website content.
+        // NEW: You can now add `type: 'video'`
+        // For videos: `thumbnailUrl` is the image grid, `videoUrl` is the video file
         const portfolioData = {
             name: "Mohd Humam Aziz Khan",
-            hero: { greeting: "Hello, I'm", titles: ["BCA Student","Developer","Photographer","Aspiring IT Professional"] },
-            about: { bio: `I am currently pursuing a Bachelor of Computer Applications (BCA) at the Asian School of Business, set to graduate in 2026. With a strong foundation in programming languages such as C, C++, HTML, CSS, and JavaScript, I am passionate about developing efficient and innovative solutions.\n\nAdditionally, I have a growing interest in cybersecurity, which complements my technical skills and enhances my understanding of safe coding practices. I am eager to apply my knowledge in real-world projects and contribute to a dynamic team in the tech industry.\n\nI am always looking to learn and connect with professionals in the field.` },
-            skills: [ { name: "DSA", level: "87%" }, { name: "Cybersecurity", level: "82%" }, { name: "Computer Artitecture", level: "75%" }, { name: "HTML, CSS, C++, C", level: "95%" }, { name: "ERP System", level: "86%" }, { name: "Object Oriented Programming", level: "74%" }, { name: "Git & GitHub", level: "89%" }, { name: "Operating System", level: "94%" }, { name: "Photography, Video Editing", level: "97%" }, ],
-            portfolio: [ { type: 'image', thumbnailUrl: "images/image1.jpg", alt: "A beautiful landscape photo" }, { type: 'video', thumbnailUrl: "images/bg1.png", videoUrl: "videos/video1.mp4", alt: "My latest video reel" }, { type: 'image', thumbnailUrl: "images/image2.jpg", alt: "Cat" }, { type: 'image', thumbnailUrl: "images/image3.jpg", alt: "Car" }, { type: 'image', thumbnailUrl: "images/image4.jpg", alt: "Dargah" }, { type: 'video', thumbnailUrl: "images/bg2.png", videoUrl: "videos/video2.mp4", alt: "A dynamic video edit" }, { type: 'image', thumbnailUrl: "images/image5.jpg", alt: "Eye Contact" }, { type: 'image', thumbnailUrl: "images/image6.jpg", alt: "Smile of Winning" }, ],
-            contact: { email: "mohdhumama5@gmail.com" },
-            socials: { linkedin: "https://www.linkedin.com/in/humam18", github: "https://github.com/humamaziz" }
+            hero: {
+                greeting: "Hello, I'm",
+                titles: ["BCA Student","Developer","Photographer","Aspiring IT Professional"]
+            },
+            about: {
+                bio: `I am currently pursuing a Bachelor of Computer Applications (BCA) at the Asian School of Business, set to graduate in 2026. With a strong foundation in programming languages such as C, C++, HTML, CSS, and JavaScript, I am passionate about developing efficient and innovative solutions.
+                
+Additionally, I have a growing interest in cybersecurity, which complements my technical skills and enhances my understanding of safe coding practices. I am eager to apply my knowledge in real-world projects and contribute to a dynamic team in the tech industry.
+
+I am always looking to learn and connect with professionals in the field.`
+            },
+            skills: [
+                { name: "DSA", level: "87%" },
+                { name: "Cybersecurity", level: "82%" },
+                { name: "Computer Artitecture", level: "75%" },
+                { name: "HTML, CSS, C++, C", level: "95%" },
+                { name: "ERP System", level: "86%" },
+                { name: "Object Oriented Programming", level: "74%" },
+                { name: "Git & GitHub", level: "89%" },
+                { name: "Operating System", level: "94%" },
+                { name: "Photography, Video Editing", level: "97%" },
+            ],
+            // --- NEW PORTFOLIO STRUCTURE ---
+            portfolio: [
+                // Item 1: Image
+                { 
+                    type: 'image',
+                    thumbnailUrl: "images/image1.jpg", 
+                    alt: "A beautiful landscape photo" 
+                },
+                // Item 2: Video
+                { 
+                    type: 'video',
+                    thumbnailUrl: "images/bg1.png", // This is your video thumbnail
+                    videoUrl: "videos/video1.mp4", // This is your .mp4 file
+                    alt: "Hustle" 
+                },
+                // Item 3: Image
+                { 
+                    type: 'image',
+                    thumbnailUrl: "images/image2.jpg", 
+                    alt: "Cat" 
+                },
+                // Item 4: Image
+                { 
+                    type: 'image',
+                    thumbnailUrl: "images/image3.jpg", 
+                    alt: "Car" 
+                },
+                // Item 5: Image
+                { 
+                    type: 'image',
+                    thumbnailUrl: "images/image4.jpg", 
+                    alt: "Dargah" 
+                },
+                // Item 6: Video
+                { 
+                    type: 'video',
+                    thumbnailUrl: "images/bg2.png",
+                    videoUrl: "videos/video2.mp4",
+                    alt: "Wake, Hustle, Repeat." 
+                },
+                // --- Add more for the full gallery ---
+                { 
+                    type: 'image',
+                    thumbnailUrl: "images/image5.jpg", 
+                    alt: "Eye Contact" 
+                },
+                { 
+                    type: 'image',
+                    thumbnailUrl: "images/image6.jpg", 
+                    alt: "Smile of Winning" 
+                },
+            ],
+            contact: {
+                email: "mohdhumama5@gmail.com"
+            },
+            socials: {
+                linkedin: "https://www.linkedin.com/in/humam18",
+                github: "https://github.com/humamaziz"
+            }
         };
 
         // --- 2. DYNAMIC CONTENT RENDERING & ANIMATIONS ---
         
-        // --- Lightbox Global State & Elements ---
+        // --- NEW: Lightbox Global State ---
         let currentLightboxIndex = 0;
         const lightboxEl = document.getElementById('lightbox-container');
         const lightboxImg = document.getElementById('lightbox-img');
@@ -209,7 +476,13 @@
         const lightboxPrevBtn = document.getElementById('lightbox-prev');
         const lightboxNextBtn = document.getElementById('lightbox-next');
 
-        function createPortfolioItem(item, index) { /* ... (Same as before) ... */ 
+        /**
+         * --- NEW: Function to create a single grid item ---
+         * @param {object} item - The portfolio item from portfolioData
+         * @param {number} index - The item's index in the main array
+         * @returns {HTMLElement} - The fully built grid item
+         */
+        function createPortfolioItem(item, index) {
             const itemWrapper = document.createElement('div');
             itemWrapper.className = 'group relative rounded-lg overflow-hidden shadow-xl cursor-pointer animate-on-scroll zoom-in';
             itemWrapper.style.transitionDelay = `${(index % 6) * 100}ms`; // Stagger animation
@@ -239,141 +512,94 @@
                 ${playIcon}
             `;
             
-            itemWrapper.addEventListener('click', () => { openLightbox(index); });
+            // Add click listener to open the lightbox
+            itemWrapper.addEventListener('click', () => {
+                openLightbox(index);
+            });
+            
             return itemWrapper;
         }
-        function openLightbox(index) { /* ... (Same as before) ... */ 
-             if (index < 0 || index >= portfolioData.portfolio.length) return;
+
+        /**
+         * --- NEW: Lightbox Functions ---
+         */
+        function openLightbox(index) {
+            if (index < 0 || index >= portfolioData.portfolio.length) {
+                return;
+            }
+            
             currentLightboxIndex = index;
             const item = portfolioData.portfolio[index];
-            lightboxVideo.pause(); lightboxVideo.src = ""; // Stop previous video
+
+            // Stop any playing video first
+            lightboxVideo.pause();
+            lightboxVideo.src = "";
+            
             if (item.type === 'image') {
-                lightboxImg.src = item.thumbnailUrl; 
-                lightboxImg.style.display = 'block'; lightboxVideo.style.display = 'none';
+                lightboxImg.src = item.thumbnailUrl; // Use thumbnail as full-res for this demo
+                lightboxImg.style.display = 'block';
+                lightboxVideo.style.display = 'none';
             } else if (item.type === 'video') {
-                lightboxVideo.src = item.videoUrl; lightboxVideo.play();
-                lightboxImg.style.display = 'none'; lightboxVideo.style.display = 'block';
+                lightboxVideo.src = item.videoUrl;
+                lightboxVideo.play();
+                lightboxImg.style.display = 'none';
+                lightboxVideo.style.display = 'block';
             }
-            lightboxEl.classList.add('is-open'); document.body.style.overflow = 'hidden';
+            
+            lightboxEl.classList.add('is-open');
+            document.body.style.overflow = 'hidden'; // Stop page scrolling
         }
-        function closeLightbox() { /* ... (Same as before) ... */ 
+
+        function closeLightbox() {
             lightboxEl.classList.remove('is-open');
-            lightboxVideo.pause(); lightboxVideo.src = "";
-            document.body.style.overflow = 'auto';
+            lightboxVideo.pause(); // Stop video on close
+            lightboxVideo.src = "";
+            document.body.style.overflow = 'auto'; // Re-enable page scrolling
         }
-        function showNextItem() { /* ... (Same as before) ... */ 
-             const nextIndex = (currentLightboxIndex + 1) % portfolioData.portfolio.length; openLightbox(nextIndex);
-         }
-        function showPrevItem() { /* ... (Same as before) ... */ 
-             const prevIndex = (currentLightboxIndex - 1 + portfolioData.portfolio.length) % portfolioData.portfolio.length; openLightbox(prevIndex);
-         }
+
+        function showNextItem() {
+            const nextIndex = (currentLightboxIndex + 1) % portfolioData.portfolio.length;
+            openLightbox(nextIndex);
+        }
+
+        function showPrevItem() {
+            const prevIndex = (currentLightboxIndex - 1 + portfolioData.portfolio.length) % portfolioData.portfolio.length;
+            openLightbox(prevIndex);
+        }
         
         // --- Main Function on Page Load ---
-        // --- NOTE: No DOMContentLoaded wrapper needed for type="module" ---
+        document.addEventListener('DOMContentLoaded', () => {
             
-            // --- NEW: Initialize Three.js Background ---
-            let scene, camera, renderer, mesh, ambientLight, directionalLight;
-            const mouse = new THREE.Vector2(); // Normalized mouse coords (-1 to +1)
-            let scrollY = 0;
-            const clock = new THREE.Clock(); // For smooth animation delta time
+            // --- Initialize Vanta.js Background ---
+            VANTA.NET({
+              el: "#vanta-bg",
+              mouseControls: true,
+              touchControls: true,
+              gyroControls: false,
+              minHeight: 200.00,
+              minWidth: 200.00,
+              scale: 1.00,
+              scaleMobile: 1.00,
+              color: 0x3b82f6,
+              backgroundColor: 0x111827,
+              points: 8.00,       
+              maxDistance: 22.00,  
+              spacing: 18.00       
+            });
             
-            function initThreeJS() {
-                const container = document.getElementById('threejs-bg');
-                
-                // Scene
-                scene = new THREE.Scene();
-                
-                // Camera
-                camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100); // Reduced FOV slightly
-                camera.position.z = 25; // Adjusted distance
-                
-                // Renderer
-                renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); 
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimize pixel ratio
-                container.appendChild(renderer.domElement);
-                
-                // Object (Torus Knot)
-                const geometry = new THREE.TorusKnotGeometry(6, 1.5, 100, 16); // Params: radius, tubeRadius, tubularSegments, radialSegments
-                const material = new THREE.MeshStandardMaterial({ 
-                    color: 0x2563eb, // Tailwind blue-600 (adjust if needed)
-                    metalness: 0.7,   // More metallic
-                    roughness: 0.3    // Slightly less rough
-                });
-                mesh = new THREE.Mesh(geometry, material);
-                mesh.rotation.x = Math.PI / 4; // Initial tilt
-                scene.add(mesh);
-                
-                // Lights 
-                ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
-                scene.add(ambientLight);
-                
-                directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                directionalLight.position.set(5, 10, 7.5); // Position the light source
-                scene.add(directionalLight);
-                
-                // Event Listeners
-                document.addEventListener('mousemove', onDocumentMouseMove, false);
-                window.addEventListener('scroll', onWindowScroll, false);
-                window.addEventListener('resize', onWindowResize, false);
-            }
-
-            function onDocumentMouseMove(event) {
-                // Normalize mouse position from -1 to +1
-                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            }
-
-            function onWindowScroll() {
-                scrollY = window.scrollY;
-            }
-
-            function onWindowResize() {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            }
-
-            function animate() {
-                requestAnimationFrame(animate);
-                const elapsedTime = clock.getElapsedTime(); // Use delta time for smooth animation
-
-                // **NEW: "Look At" Mouse Interaction**
-                // Create a target position based on mouse coordinates
-                // We'll project the mouse onto a plane in front of the camera
-                const targetPosition = new THREE.Vector3(mouse.x * 10, mouse.y * 10, camera.position.z - 15); // Adjust multiplier & z-offset
-
-                // Smoothly interpolate the mesh's lookAt target
-                const lookAtTarget = new THREE.Vector3();
-                lookAtTarget.lerpVectors(mesh.position, targetPosition, 0.05); // Adjust lerp factor (0.05 = smoothing)
-                mesh.lookAt(lookAtTarget);
-
-                // **Scroll Interaction (Rotate Y)**
-                mesh.rotation.y = scrollY * 0.0005 + elapsedTime * 0.1; // Combine scroll rotation with slow constant spin
-                mesh.rotation.x = elapsedTime * 0.05; // Add a very slow constant tilt
-
-                renderer.render(scene, camera);
-            }
-            
-            // --- Initialize Three.js and Start Animation ---
-            initThreeJS();
-            animate();
-
             // --- Populate text content ---
-             document.getElementById('nav-name').textContent = portfolioData.name; /* ... (Same as before) ... */ 
-             document.getElementById('hero-greeting').textContent = portfolioData.hero.greeting;
-             document.getElementById('hero-name').textContent = portfolioData.name;
-             document.getElementById('about-bio').textContent = portfolioData.about.bio;
-             document.getElementById('contact-email').href = `mailto:${portfolioData.contact.email}`;
-             document.getElementById('linkedin-connect').href = portfolioData.socials.linkedin;
-             document.getElementById('footer-year').textContent = new Date().getFullYear();
-             document.getElementById('footer-name').textContent = portfolioData.name;
-
+            document.getElementById('nav-name').textContent = portfolioData.name;
+            document.getElementById('hero-greeting').textContent = portfolioData.hero.greeting;
+            document.getElementById('hero-name').textContent = portfolioData.name;
+            document.getElementById('about-bio').textContent = portfolioData.about.bio;
+            document.getElementById('contact-email').href = `mailto:${portfolioData.contact.email}`;
+            document.getElementById('linkedin-connect').href = portfolioData.socials.linkedin;
+            document.getElementById('footer-year').textContent = new Date().getFullYear();
+            document.getElementById('footer-name').textContent = portfolioData.name;
 
             // --- Populate GitHub link ---
             const githubContainer = document.getElementById('github-link-container');
-            if (portfolioData.socials.github) { /* ... (Same as before) ... */ 
+            if (portfolioData.socials.github) {
                 const githubLink = document.createElement('a');
                 githubLink.href = portfolioData.socials.github;
                 githubLink.target = '_blank';
@@ -382,11 +608,11 @@
                 githubLink.setAttribute('aria-label', 'GitHub');
                 githubLink.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-7 h-7 md:w-8 md:h-8"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.74 15.28c-.412 0-.748-.336-.748-.748v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748Zm-2.221-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm-3.374 2.998v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748-.412 0-.748-.336-.748-.748Zm-2.22-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm11.31-4.544v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm2.221 3.018c0 .413-.335.748-.748.748v-4.544c0-.413.335-.748.748-.748.412 0 .748.335.748.748v4.544Zm2.22-3.018v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm-2.22-5.292a.748.748 0 0 0-.748.748v2.456c0 .413.335.748.748.748.413 0 .748-.335.748-.748V6.69c0-.412-.335-.748-.748-.748Z" clip-rule="evenodd" /></svg>`;
                 githubContainer.appendChild(githubLink);
-             }
+            }
 
             // --- Populate animated skill bars ---
             const skillsContainer = document.getElementById('skills-container');
-            portfolioData.skills.forEach((skill, index) => { /* ... (Same as before) ... */ 
+            portfolioData.skills.forEach((skill, index) => {
                 const skillElement = document.createElement('div');
                 skillElement.className = 'animate-on-scroll fade-in-up';
                 skillElement.style.transitionDelay = `${index * 100}ms`;
@@ -407,76 +633,122 @@
             const galleryGrid = document.getElementById('gallery-grid');
             const featuredItems = portfolioData.portfolio.slice(0, 6);
             
-            featuredItems.forEach((item, index) => { portfolioContainer.appendChild(createPortfolioItem(item, index)); });
-            portfolioData.portfolio.forEach((item, index) => { galleryGrid.appendChild(createPortfolioItem(item, index)); });
+            // Populate Featured Grid
+            featuredItems.forEach((item, index) => {
+                const el = createPortfolioItem(item, index);
+                portfolioContainer.appendChild(el);
+            });
             
-            // --- Gallery Page Listeners ---
+            // Populate Full Gallery Grid
+            portfolioData.portfolio.forEach((item, index) => {
+                const el = createPortfolioItem(item, index);
+                galleryGrid.appendChild(el);
+            });
+            
+            // --- Gallery Page Open/Close Listeners ---
             const galleryPage = document.getElementById('gallery-page');
             const openGalleryBtn = document.getElementById('gallery-page-btn');
             const openGalleryBtnMobile = document.getElementById('gallery-page-btn-mobile');
             const closeGalleryBtn = document.getElementById('gallery-close-btn');
 
-            const openGallery = () => { /* ... (Same as before) ... */ 
-                 galleryPage.classList.add('is-open'); document.body.style.overflow = 'hidden'; window.scrollTo(0, 0); 
+            const openGallery = () => {
+                galleryPage.classList.add('is-open');
+                document.body.style.overflow = 'hidden';
+                window.scrollTo(0, 0);
             };
-            const closeGallery = () => { /* ... (Same as before) ... */ 
-                galleryPage.classList.remove('is-open'); document.body.style.overflow = 'auto'; 
-             };
+            const closeGallery = () => {
+                galleryPage.classList.remove('is-open');
+                document.body.style.overflow = 'auto';
+            };
 
             openGalleryBtn.addEventListener('click', openGallery);
             openGalleryBtnMobile.addEventListener('click', openGallery);
             closeGalleryBtn.addEventListener('click', closeGallery);
             
-            // --- Lightbox Listeners ---
+            // --- Lightbox Event Listeners ---
             lightboxCloseBtn.addEventListener('click', closeLightbox);
             lightboxPrevBtn.addEventListener('click', showPrevItem);
             lightboxNextBtn.addEventListener('click', showNextItem);
-            lightboxEl.addEventListener('click', (e) => { if (e.target === lightboxEl) closeLightbox(); });
+            
+            // Close lightbox on background click
+            lightboxEl.addEventListener('click', (e) => {
+                if (e.target === lightboxEl) {
+                    closeLightbox();
+                }
+            });
+            
+            // Keyboard navigation
             document.addEventListener('keydown', (e) => {
                 if (!lightboxEl.classList.contains('is-open')) return;
-                if (e.key === 'Escape') closeLightbox();
-                else if (e.key === 'ArrowRight') showNextItem();
-                else if (e.key === 'ArrowLeft') showPrevItem();
+                
+                if (e.key === 'Escape') {
+                    closeLightbox();
+                } else if (e.key === 'ArrowRight') {
+                    showNextItem();
+                } else if (e.key === 'ArrowLeft') {
+                    showPrevItem();
+                }
             });
 
-            // --- Scroll Animation Observer ---
+            // --- 3. SCROLL ANIMATION OBSERVER ---
             const scrollElements = document.querySelectorAll('.animate-on-scroll');
-            const observer = new IntersectionObserver((entries) => { /* ... (Same as before) ... */ 
+            const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('is-visible');
                         const skillBar = entry.target.querySelector('.skill-bar-inner');
-                        if (skillBar) skillBar.style.width = skillBar.getAttribute('data-level');
+                        if (skillBar) {
+                            skillBar.style.width = skillBar.getAttribute('data-level');
+                        }
                     }
                 });
-            }, { threshold: 0.1 });
+            }, {
+                threshold: 0.1
+            });
             scrollElements.forEach(el => observer.observe(el));
 
-            // --- Header & Back-to-Top Listeners ---
+            // --- 4. HEADER SHADOW & BACK-TO-TOP BUTTON ---
             const header = document.getElementById('main-header');
             const backToTopBtn = document.getElementById('back-to-top');
-            window.addEventListener('scroll', () => { /* ... (Same as before) ... */ 
-                 header.classList.toggle('scrolled', window.scrollY > 50); backToTopBtn.classList.toggle('is-visible', window.scrollY > 300);
-             });
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('scrolled', window.scrollY > 50);
+                backToTopBtn.classList.toggle('is-visible', window.scrollY > 300);
+            });
 
-            // --- Hero Typing Effect ---
+            // --- 5. HERO TYPING EFFECT ---
             const heroTitleEl = document.getElementById('hero-title');
             const titles = portfolioData.hero.titles;
-            let titleIndex = 0, charIndex = 0, isDeleting = false;
-            function typeEffect() { /* ... (Same as before) ... */ 
-                const currentTitle = titles[titleIndex]; let typeSpeed = 150;
+            let titleIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+
+            function typeEffect() {
+                const currentTitle = titles[titleIndex];
+                let typeSpeed = 150;
+
                 if (isDeleting) {
-                    heroTitleEl.textContent = currentTitle.substring(0, charIndex - 1); charIndex--; typeSpeed = 100;
-                    if (charIndex === 0) { isDeleting = false; titleIndex = (titleIndex + 1) % titles.length; typeSpeed = 500; }
+                    heroTitleEl.textContent = currentTitle.substring(0, charIndex - 1);
+                    charIndex--;
+                    typeSpeed = 100;
+                    if (charIndex === 0) {
+                        isDeleting = false;
+                        titleIndex = (titleIndex + 1) % titles.length;
+                        typeSpeed = 500; // Pause before typing new word
+                    }
                 } else {
-                    heroTitleEl.textContent = currentTitle.substring(0, charIndex + 1); charIndex++;
-                    if (charIndex === currentTitle.length) { isDeleting = true; typeSpeed = 2000; }
+                    heroTitleEl.textContent = currentTitle.substring(0, charIndex + 1);
+                    charIndex++;
+                    if (charIndex === currentTitle.length) {
+                        isDeleting = true;
+                        typeSpeed = 2000; // Pause at end of word
+                    }
                 }
                 setTimeout(typeEffect, typeSpeed);
             }
             setTimeout(typeEffect, 1000);
-        
+        });
     </script>
 
 </body>
 </html>
+

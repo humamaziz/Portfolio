@@ -39,7 +39,7 @@
             z-index: 0;
         }
         .content-section {
-            background: rgba(17, 24, 39, 0.8);
+            background: rgba(250, 129, 40, 0.02);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -107,7 +107,7 @@
             right: 0;
             bottom: 0;
             z-index: 100;
-            background-color: #111827;
+            background-color: 0x111827;
             overflow-y: auto;
             transition: opacity 0.4s ease, transform 0.4s ease;
             opacity: 0;
@@ -285,7 +285,7 @@
                     </div>
                     <!-- NEW: View All Button -->
                     <div class="text-center mt-12">
-                        <button id="gallery-page-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg">
+                        <button id="gallery-page-btn" class="bg-[#FA8128] text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-#E0701D hover:scale-105 transform transition duration-300 shadow-lg">
                             View Full Gallery
                         </button>
                     </div>
@@ -301,12 +301,12 @@
                     <p class="text-base md:text-lg text-gray-300 mb-10">
                         I'm always open to new opportunities and collaborations.
                     </p>
-                    <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-blue-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
+                    <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-[#FA8128] text-white font-bold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg hover:bg-[#FA8128] hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6"><path d="M19.63 3.001H4.37C3.612 3.001 3 3.611 3 4.37v15.26C3 20.388 3.612 21 4.37 21h15.26c.758 0 1.37-.611 1.37-1.37V4.37c0-.759-.612-1.369-1.37-1.369ZM8.09 18.391H5.48V8.61h2.61v9.781ZM6.78 7.391c-.826 0-1.49-.665-1.49-1.49 0-.825.664-1.49 1.49-1.49.825 0 1.49.665 1.49 1.49 0 .825-.665 1.49-1.49 1.49Zm11.61 11H15.8v-4.662c0-1.111-.02-2.541-1.549-2.541-1.55 0-1.788 1.21-1.788 2.46v4.743H9.86V8.61h2.502v1.147h.036c.348-.659 1.199-1.35 2.468-1.35 2.64 0 3.126 1.738 3.126 4.001v4.983Z" /></svg>
                         Connect on LinkedIn
                     </a>
                     <div class="flex justify-center items-center gap-6 mt-12">
-                        <a id="contact-email" href="#" class="text-gray-400 hover:text-blue-500 transition duration-300 animate-on-scroll fade-in-up" style="transition-delay: 300ms;">
+                        <a id="contact-email" href="#" class="text-gray-400 hover:text-[#FA8128] transition duration-300 animate-on-scroll fade-in-up" style="transition-delay: 300ms;">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 md:w-8 md:h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                         </a>
                         <div id="github-link-container" class="animate-on-scroll fade-in-up" style="transition-delay: 400ms;">
@@ -326,7 +326,7 @@
 
     <!-- Full Screen Gallery Page (Hidden by default) -->
     <section id="gallery-page">
-        <header class="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md">
+        <header class="sticky top-0 z-10 bg-#FA8128 backdrop-blur-md">
             <div class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
                 <h2 class="text-xl md:text-2xl font-bold text-white">Full Gallery</h2>
                 <button id="gallery-close-btn" class="text-white text-4xl leading-none hover:text-gray-300 transition">&times;</button>
@@ -580,7 +580,7 @@ I am always looking to learn and connect with professionals in the field.`
               minWidth: 200.00,
               scale: 1.00,
               scaleMobile: 1.00,
-              color: 0x3b82f6,
+              color: 0xFA8128,
               backgroundColor: 0x111827,
               points: 8.00,       
               maxDistance: 22.00,  
@@ -622,7 +622,7 @@ I am always looking to learn and connect with professionals in the field.`
                         <span class="text-sm font-medium text-gray-400">${skill.level}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2.5">
-                        <div class="skill-bar-inner bg-blue-600 h-2.5 rounded-full" data-level="${skill.level}"></div>
+                        <div class="skill-bar-inner bg-[#FA8128] h-2.5 rounded-full" data-level="${skill.level}"></div>
                     </div>
                 `;
                 skillsContainer.appendChild(skillElement);

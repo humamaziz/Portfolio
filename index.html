@@ -4,19 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Dynamic Portfolio</title>
-    <!-- 1. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. Load Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     
-    <!-- 3. Load Vanta.js dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js"></script>
 
-    <!-- 4. Custom Styles and Animations -->
     <style>
         :root {
             scroll-behavior: smooth;
@@ -25,21 +20,31 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #111827; /* Dark background fallback */
+            /* Prevent horizontal scrollbar if camera moves too far */
+            overflow-x: hidden; 
         }
         
         #about-bio {
             white-space: pre-line;
         }
-        #vanta-bg {
+        
+        /* --- NEW: Three.js Background Container --- */
+        #threejs-bg {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw; /* Use viewport width */
+            height: 100vh;/* Use viewport height */
             z-index: 0;
+            /* Ensure canvas is behind everything */
+            pointer-events: none; 
         }
+        #threejs-bg canvas {
+             display: block; /* Remove extra space below canvas */
+        }
+
         .content-section {
-            background: rgba(17, 24, 39, 0.8);
+            background: rgba(31, 41, 55, 0.7); /* Slightly lighter gray */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -69,155 +74,61 @@
             transition: width 1s ease-out;
         }
         .is-visible .skill-bar-inner {
-            /* Width is set dynamically by JS */
+            /* Width set dynamically by JS */
         }
 
-        /* --- NEW: Play Icon for Video Thumbnails --- */
+        /* --- Play Icon for Video Thumbnails --- */
         .video-play-icon {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 5rem; /* 80px */
-            height: 5rem; /* 80px */
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 5rem; height: 5rem;
+            background-color: rgba(0, 0, 0, 0.5); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none; opacity: 0.8; transition: opacity 0.3s ease;
         }
-        .group:hover .video-play-icon {
-            opacity: 1;
-        }
-        .video-play-icon svg {
-            width: 3rem; /* 48px */
-            height: 3rem; /* 48px */
-            color: white;
-            margin-left: 5px; /* Nudge for visual centering */
-        }
+        .group:hover .video-play-icon { opacity: 1; }
+        .video-play-icon svg { width: 3rem; height: 3rem; color: white; margin-left: 5px; }
 
         /* --- Full Screen Gallery Page --- */
         #gallery-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 100;
-            background-color: #111827;
-            overflow-y: auto;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100;
+            background-color: #111827; overflow-y: auto;
             transition: opacity 0.4s ease, transform 0.4s ease;
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
+            opacity: 0; transform: translateY(20px); pointer-events: none;
         }
-        #gallery-page.is-open {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
+        #gallery-page.is-open { opacity: 1; transform: translateY(0); pointer-events: auto; }
         
-        /* --- NEW: Lightbox Styles --- */
+        /* --- Lightbox Styles --- */
         #lightbox-container {
-            position: fixed;
-            inset: 0;
-            z-index: 200; /* Highest z-index */
+            position: fixed; inset: 0; z-index: 200;
             background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        #lightbox-container.is-open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #lightbox-content {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        /* The image itself, with original ratio */
-        #lightbox-img {
-            max-width: 95vw;
-            max-height: 95vh;
-            object-fit: contain; /* This respects the original ratio */
-            display: none; /* Hidden by default */
-        }
-        /* The video player */
-        #lightbox-video {
-            max-width: 90vw;
-            max-height: 90vh;
-            display: none; /* Hidden by default */
-        }
-
-        /* Lightbox Close & Nav Buttons */
-        .lightbox-btn {
-            position: absolute;
-            z-index: 210;
-            color: white;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 50%;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .lightbox-btn:hover {
-            background: rgba(0, 0, 0, 0.7);
-            transform: scale(1.1);
-        }
-        #lightbox-close {
-            top: 1rem;
-            right: 1rem;
-        }
-        #lightbox-prev {
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        #lightbox-next {
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-        }
+        #lightbox-container.is-open { opacity: 1; pointer-events: auto; }
+        #lightbox-content { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #lightbox-img { max-width: 95vw; max-height: 95vh; object-fit: contain; display: none; }
+        #lightbox-video { max-width: 90vw; max-height: 90vh; display: none; }
+        .lightbox-btn { position: absolute; z-index: 210; color: white; background: rgba(0, 0, 0, 0.4); border-radius: 50%; padding: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
+        .lightbox-btn:hover { background: rgba(0, 0, 0, 0.7); transform: scale(1.1); }
+        #lightbox-close { top: 1rem; right: 1rem; }
+        #lightbox-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+        #lightbox-next { right: 1rem; top: 50%; transform: translateY(-50%); }
 
         /* --- Back to Top Button --- */
         #back-to-top {
-            position: fixed;
-            bottom: 1rem; 
-            right: 1rem;
-            md:bottom: 2rem;
-            md:right: 2rem;
-            z-index: 50;
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
+            position: fixed; bottom: 1rem; right: 1rem; md:bottom: 2rem; md:right: 2rem;
+            z-index: 50; opacity: 0; transform: translateY(20px); pointer-events: none;
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        #back-to-top.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
+        #back-to-top.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
     </style>
 </head>
 <body class="text-gray-100">
 
-    <!-- Vanta.js Animated Background Target -->
-    <div id="vanta-bg"></div>
+    <div id="threejs-bg"></div>
 
-    <!-- Header / Navigation -->
     <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-gray-900/50 backdrop-blur-md border-b border-gray-700/50 transition-all duration-300">
         <nav class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
             <div id="nav-name" class="text-xl md:text-2xl font-bold text-white"></div>
@@ -234,10 +145,8 @@
         </nav>
     </header>
 
-    <!-- Main Content -->
     <main class="relative z-10">
 
-        <!-- Hero Section -->
         <section id="home" class="h-screen relative flex items-center justify-center text-center px-4 overflow-hidden z-1">
             <video autoplay loop muted playsinline class="absolute top-0 left-0 w-full h-full object-cover z-[-1]">
                 <source src="13127658_1920_1080_24fps.mp4" type="video/mp4">
@@ -250,7 +159,6 @@
             </div>
         </section>
 
-        <!-- About Me Section -->
         <section id="about" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-4xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-left">
@@ -260,47 +168,35 @@
             </div>
         </section>
 
-        <!-- Skills Section -->
         <section id="skills" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-5xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-right">
                     <h2 class="text-3xl md:text-4xl font-bold text-center mb-10 md:mb-12">My Skills</h2>
                     <div id="skills-container" class="space-y-6">
-                        <!-- Animated skill bars injected here -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </section>
 
-        <!-- Featured Work (Portfolio) Section -->
         <section id="portfolio" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-7xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll zoom-in">
                     <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Featured Work</h2>
-                    <p class="text-center text-base md:text-lg text-gray-400 mb-10">
-                        Click any item to view in full screen.
-                    </p>
+                    <p class="text-center text-base md:text-lg text-gray-400 mb-10">Click any item to view in full screen.</p>
                     <div id="portfolio-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                        <!-- 6 Featured portfolio items will be injected here -->
-                    </div>
-                    <!-- NEW: View All Button -->
+                        </div>
                     <div class="text-center mt-12">
-                        <button id="gallery-page-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg">
-                            View Full Gallery
-                        </button>
+                        <button id="gallery-page-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg">View Full Gallery</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Contact Section -->
         <section id="contact" class="py-20 md:py-24">
             <div class="container mx-auto px-4 md:px-6 max-w-3xl">
                 <div class="content-section rounded-2xl p-6 md:p-12 shadow-2xl animate-on-scroll fade-in-up text-center">
                     <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Get In Touch</h2>
-                    <p class="text-base md:text-lg text-gray-300 mb-10">
-                        I'm always open to new opportunities and collaborations.
-                    </p>
+                    <p class="text-base md:text-lg text-gray-300 mb-10">I'm always open to new opportunities and collaborations.</p>
                     <a id="linkedin-connect" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-blue-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg hover:bg-blue-700 hover:scale-105 transform transition duration-300 shadow-lg animate-on-scroll zoom-in" style="transition-delay: 200ms;">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6"><path d="M19.63 3.001H4.37C3.612 3.001 3 3.611 3 4.37v15.26C3 20.388 3.612 21 4.37 21h15.26c.758 0 1.37-.611 1.37-1.37V4.37c0-.759-.612-1.369-1.37-1.369ZM8.09 18.391H5.48V8.61h2.61v9.781ZM6.78 7.391c-.826 0-1.49-.665-1.49-1.49 0-.825.664-1.49 1.49-1.49.825 0 1.49.665 1.49 1.49 0 .825-.665 1.49-1.49 1.49Zm11.61 11H15.8v-4.662c0-1.111-.02-2.541-1.549-2.541-1.55 0-1.788 1.21-1.788 2.46v4.743H9.86V8.61h2.502v1.147h.036c.348-.659 1.199-1.35 2.468-1.35 2.64 0 3.126 1.738 3.126 4.001v4.983Z" /></svg>
                         Connect on LinkedIn
@@ -310,8 +206,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 md:w-8 md:h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                         </a>
                         <div id="github-link-container" class="animate-on-scroll fade-in-up" style="transition-delay: 400ms;">
-                            <!-- GitHub link injected here -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -319,12 +214,10 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="text-center py-8 text-gray-400 relative z-10">
         <p>&copy; <span id="footer-year"></span> <span id="footer-name"></span>. All rights reserved.</p>
     </footer>
 
-    <!-- Full Screen Gallery Page (Hidden by default) -->
     <section id="gallery-page">
         <header class="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md">
             <div class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
@@ -334,52 +227,28 @@
         </header>
         <div class="container mx-auto p-4 md:p-6">
             <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <!-- Full gallery (all photos & videos) will be injected here -->
-            </div>
+                </div>
         </div>
     </section>
 
-    <!-- NEW: Lightbox Container (Hidden by default) -->
     <div id="lightbox-container">
-        <!-- Main Content (Image or Video) -->
         <div id="lightbox-content">
             <img id="lightbox-img" src="" alt="Full screen portfolio image">
-            <video id="lightbox-video" src="" controls autoplay muted loop playsinline>
-                Your browser does not support the video tag.
-            </video>
+            <video id="lightbox-video" src="" controls autoplay muted loop playsinline>Your browser does not support the video tag.</video>
         </div>
-
-        <!-- Close Button -->
-        <button id="lightbox-close" class="lightbox-btn" aria-label="Close">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-        <!-- Previous Button -->
-        <button id="lightbox-prev" class="lightbox-btn" aria-label="Previous">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
-        <!-- Next Button -->
-        <button id="lightbox-next" class="lightbox-btn" aria-label="Next">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </button>
+        <button id="lightbox-close" class="lightbox-btn" aria-label="Close"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <button id="lightbox-prev" class="lightbox-btn" aria-label="Previous"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+        <button id="lightbox-next" class="lightbox-btn" aria-label="Next"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
     </div>
 
-    <!-- Back to Top Button -->
     <a href="#home" id="back-to-top" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition duration-300" aria-label="Back to top">
         <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" /></svg>
     </a>
 
 
-    <!-- 
-    =====================================================================
-    === YOUR WEBSITE DATA - EDIT EVERYTHING BELOW THIS LINE ===
-    =====================================================================
-    -->
     <script>
         
         // --- 1. YOUR DATA ---
-        // Edit this object to update your website content.
-        // NEW: You can now add `type: 'video'`
-        // For videos: `thumbnailUrl` is the image grid, `videoUrl` is the video file
         const portfolioData = {
             name: "Mohd Humam Aziz Khan",
             hero: {
@@ -389,85 +258,37 @@
             about: {
                 bio: `I am currently pursuing a Bachelor of Computer Applications (BCA) at the Asian School of Business, set to graduate in 2026. With a strong foundation in programming languages such as C, C++, HTML, CSS, and JavaScript, I am passionate about developing efficient and innovative solutions.
                 
-Additionally, I have a growing interest in cybersecurity, which complements my technical skills and enhances my understanding of safe coding practices. I am eager to apply my knowledge in real-world projects and contribute to a dynamic team in the tech industry.
+                Additionally, I have a growing interest in cybersecurity, which complements my technical skills and enhances my understanding of safe coding practices. I am eager to apply my knowledge in real-world projects and contribute to a dynamic team in the tech industry.
 
-I am always looking to learn and connect with professionals in the field.`
+                I am always looking to learn and connect with professionals in the field.`
             },
             skills: [
-                { name: "DSA", level: "87%" },
-                { name: "Cybersecurity", level: "82%" },
+                { name: "DSA", level: "87%" }, { name: "Cybersecurity", level: "82%" }, 
                 { name: "Computer Artitecture", level: "75%" },
-                { name: "HTML, CSS, C++, C", level: "95%" },
-                { name: "ERP System", level: "86%" },
+                { name: "HTML, CSS, C++, C", level: "95%" }, 
+                { name: "ERP System", level: "86%" }, 
                 { name: "Object Oriented Programming", level: "74%" },
-                { name: "Git & GitHub", level: "89%" },
-                { name: "Operating System", level: "94%" },
+                { name: "Git & GitHub", level: "89%" }, 
+                { name: "Operating System", level: "94%" }, 
                 { name: "Photography, Video Editing", level: "97%" },
             ],
-            // --- NEW PORTFOLIO STRUCTURE ---
             portfolio: [
-                // Item 1: Image
-                { 
-                    type: 'image',
-                    thumbnailUrl: "images/image1.jpg", 
-                    alt: "A beautiful landscape photo" 
-                },
-                // Item 2: Video
-                { 
-                    type: 'video',
-                    thumbnailUrl: "images/bg1.png", // This is your video thumbnail
-                    videoUrl: "videos/video1.mp4", // This is your .mp4 file
-                    alt: "Hustle" 
-                },
-                // Item 3: Image
-                { 
-                    type: 'image',
-                    thumbnailUrl: "images/image2.jpg", 
-                    alt: "Cat" 
-                },
-                // Item 4: Image
-                { 
-                    type: 'image',
-                    thumbnailUrl: "images/image3.jpg", 
-                    alt: "Car" 
-                },
-                // Item 5: Image
-                { 
-                    type: 'image',
-                    thumbnailUrl: "images/image4.jpg", 
-                    alt: "Dargah" 
-                },
-                // Item 6: Video
-                { 
-                    type: 'video',
-                    thumbnailUrl: "images/bg2.png",
-                    videoUrl: "videos/video2.mp4",
-                    alt: "Wake, Hustle, Repeat." 
-                },
-                // --- Add more for the full gallery ---
-                { 
-                    type: 'image',
-                    thumbnailUrl: "images/image5.jpg", 
-                    alt: "Eye Contact" 
-                },
-                { 
-                    type: 'image',
-                    thumbnailUrl: "images/image6.jpg", 
-                    alt: "Smile of Winning" 
-                },
+                { type: 'image', thumbnailUrl: "images/image1.jpg", alt: "A beautiful landscape photo" },
+                { type: 'video', thumbnailUrl: "images/bg1.png", videoUrl: "videos/video1.mp4", alt: "Hustle" },
+                { type: 'image', thumbnailUrl: "images/image2.jpg", alt: "Cat" }, 
+                { type: 'image', thumbnailUrl: "images/image3.jpg", alt: "Car" },
+                { type: 'image', thumbnailUrl: "images/image4.jpg", alt: "Dargah" },
+                { type: 'video', thumbnailUrl: "images/bg2.png", videoUrl: "videos/video2.mp4", alt: "Wake, Hustle, Repeat." },
+                { type: 'image', thumbnailUrl: "images/image5.jpg", alt: "Eye Contact" }, 
+                { type: 'image', thumbnailUrl: "images/image6.jpg", alt: "Smile of Winning" },
             ],
-            contact: {
-                email: "mohdhumama5@gmail.com"
-            },
-            socials: {
-                linkedin: "https://www.linkedin.com/in/humam18",
-                github: "https://github.com/humamaziz"
-            }
+            contact: { email: "mohdhumama5@gmail.com" },
+            socials: { linkedin: "https://www.linkedin.com/in/humam18", github: "https://github.com/humamaziz" }
         };
 
         // --- 2. DYNAMIC CONTENT RENDERING & ANIMATIONS ---
         
-        // --- NEW: Lightbox Global State ---
+        // --- Lightbox Global State ---
         let currentLightboxIndex = 0;
         const lightboxEl = document.getElementById('lightbox-container');
         const lightboxImg = document.getElementById('lightbox-img');
@@ -476,13 +297,7 @@ I am always looking to learn and connect with professionals in the field.`
         const lightboxPrevBtn = document.getElementById('lightbox-prev');
         const lightboxNextBtn = document.getElementById('lightbox-next');
 
-        /**
-         * --- NEW: Function to create a single grid item ---
-         * @param {object} item - The portfolio item from portfolioData
-         * @param {number} index - The item's index in the main array
-         * @returns {HTMLElement} - The fully built grid item
-         */
-        function createPortfolioItem(item, index) {
+        function createPortfolioItem(item, index) { /* ... (Code is the same as previous version) ... */ 
             const itemWrapper = document.createElement('div');
             itemWrapper.className = 'group relative rounded-lg overflow-hidden shadow-xl cursor-pointer animate-on-scroll zoom-in';
             itemWrapper.style.transitionDelay = `${(index % 6) * 100}ms`; // Stagger animation
@@ -519,11 +334,7 @@ I am always looking to learn and connect with professionals in the field.`
             
             return itemWrapper;
         }
-
-        /**
-         * --- NEW: Lightbox Functions ---
-         */
-        function openLightbox(index) {
+        function openLightbox(index) { /* ... (Code is the same as previous version) ... */ 
             if (index < 0 || index >= portfolioData.portfolio.length) {
                 return;
             }
@@ -536,7 +347,7 @@ I am always looking to learn and connect with professionals in the field.`
             lightboxVideo.src = "";
             
             if (item.type === 'image') {
-                lightboxImg.src = item.thumbnailUrl; // Use thumbnail as full-res for this demo
+                lightboxImg.src = item.thumbnailUrl; // Use thumbnail as full-res 
                 lightboxImg.style.display = 'block';
                 lightboxVideo.style.display = 'none';
             } else if (item.type === 'video') {
@@ -549,20 +360,17 @@ I am always looking to learn and connect with professionals in the field.`
             lightboxEl.classList.add('is-open');
             document.body.style.overflow = 'hidden'; // Stop page scrolling
         }
-
-        function closeLightbox() {
+        function closeLightbox() { /* ... (Code is the same as previous version) ... */ 
             lightboxEl.classList.remove('is-open');
             lightboxVideo.pause(); // Stop video on close
             lightboxVideo.src = "";
             document.body.style.overflow = 'auto'; // Re-enable page scrolling
         }
-
-        function showNextItem() {
+        function showNextItem() { /* ... (Code is the same as previous version) ... */ 
             const nextIndex = (currentLightboxIndex + 1) % portfolioData.portfolio.length;
             openLightbox(nextIndex);
         }
-
-        function showPrevItem() {
+        function showPrevItem() { /* ... (Code is the same as previous version) ... */ 
             const prevIndex = (currentLightboxIndex - 1 + portfolioData.portfolio.length) % portfolioData.portfolio.length;
             openLightbox(prevIndex);
         }
@@ -570,23 +378,89 @@ I am always looking to learn and connect with professionals in the field.`
         // --- Main Function on Page Load ---
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- Initialize Vanta.js Background ---
-            VANTA.NET({
-              el: "#vanta-bg",
-              mouseControls: true,
-              touchControls: true,
-              gyroControls: false,
-              minHeight: 200.00,
-              minWidth: 200.00,
-              scale: 1.00,
-              scaleMobile: 1.00,
-              color: 0x3b82f6,
-              backgroundColor: 0x111827,
-              points: 8.00,       
-              maxDistance: 22.00,  
-              spacing: 18.00       
-            });
+            // --- NEW: Initialize Three.js Background ---
+            let scene, camera, renderer, mesh;
+            let mouseX = 0, mouseY = 0;
+            let targetX = 0, targetY = 0;
+            const windowHalfX = window.innerWidth / 2;
+            const windowHalfY = window.innerHeight / 2;
+            let scrollY = 0;
             
+            function initThreeJS() {
+                const container = document.getElementById('threejs-bg');
+                
+                // Scene
+                scene = new THREE.Scene();
+                
+                // Camera
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 30; // Move camera back a bit
+                
+                // Renderer
+                renderer = new THREE.WebGLRenderer({ alpha: true }); // alpha:true for transparent background
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                container.appendChild(renderer.domElement);
+                
+                // Object (Icosahedron wireframe)
+                const geometry = new THREE.IcosahedronGeometry(10, 1); // Size 10, detail 1
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 0x3b82f6, // Blue color from theme
+                    wireframe: true 
+                });
+                mesh = new THREE.Mesh(geometry, material);
+                scene.add(mesh);
+                
+                // Lights (Not needed for MeshBasicMaterial wireframe, but good practice)
+                // const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                // scene.add(ambientLight);
+                // const pointLight = new THREE.PointLight(0xffffff, 0.5);
+                // camera.add(pointLight);
+                // scene.add(camera); // Add camera to scene AFTER adding light to it
+                
+                // Event Listeners
+                document.addEventListener('mousemove', onDocumentMouseMove, false);
+                window.addEventListener('scroll', onWindowScroll, false);
+                window.addEventListener('resize', onWindowResize, false);
+            }
+
+            function onDocumentMouseMove(event) {
+                mouseX = (event.clientX - windowHalfX);
+                mouseY = (event.clientY - windowHalfY);
+            }
+
+            function onWindowScroll() {
+                scrollY = window.scrollY;
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Mouse follow effect (subtle camera rotation)
+                targetX = mouseX * 0.0005; // Adjust sensitivity
+                targetY = mouseY * 0.0005;
+                // Apply rotation based on mouse position
+                scene.rotation.y += (targetX - scene.rotation.y) * 0.05;
+                scene.rotation.x += (targetY - scene.rotation.x) * 0.05;
+
+                // Scroll effect (rotate the object's Z axis)
+                if (mesh) { // Check if mesh is initialized
+                    mesh.rotation.z = scrollY * 0.001; 
+                }
+
+                renderer.render(scene, camera);
+            }
+            
+            // --- Initialize Three.js and Start Animation ---
+            initThreeJS();
+            animate();
+
             // --- Populate text content ---
             document.getElementById('nav-name').textContent = portfolioData.name;
             document.getElementById('hero-greeting').textContent = portfolioData.hero.greeting;
@@ -599,7 +473,7 @@ I am always looking to learn and connect with professionals in the field.`
 
             // --- Populate GitHub link ---
             const githubContainer = document.getElementById('github-link-container');
-            if (portfolioData.socials.github) {
+            if (portfolioData.socials.github) { /* ... (Code is the same as previous version) ... */ 
                 const githubLink = document.createElement('a');
                 githubLink.href = portfolioData.socials.github;
                 githubLink.target = '_blank';
@@ -608,11 +482,11 @@ I am always looking to learn and connect with professionals in the field.`
                 githubLink.setAttribute('aria-label', 'GitHub');
                 githubLink.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-7 h-7 md:w-8 md:h-8"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.74 15.28c-.412 0-.748-.336-.748-.748v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748Zm-2.221-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm-3.374 2.998v-2.456c0-.413.336-.748.748-.748.413 0 .748.335.748.748v2.456c0 .412-.335.748-.748.748-.412 0-.748-.336-.748-.748Zm-2.22-3.018c-.412 0-.748-.335-.748-.748V9.22c0-.413.336-.748.748-.748.413 0 .748.335.748.748v4.544c0 .413-.335.748-.748.748Zm11.31-4.544v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm2.221 3.018c0 .413-.335.748-.748.748v-4.544c0-.413.335-.748.748-.748.412 0 .748.335.748.748v4.544Zm2.22-3.018v2.456c0 .412-.335.748-.748.748-.413 0-.748-.336-.748-.748v-2.456c0-.413.335-.748.748-.748.413 0 .748.335.748.748Zm-2.22-5.292a.748.748 0 0 0-.748.748v2.456c0 .413.335.748.748.748.413 0 .748-.335.748-.748V6.69c0-.412-.335-.748-.748-.748Z" clip-rule="evenodd" /></svg>`;
                 githubContainer.appendChild(githubLink);
-            }
+             }
 
             // --- Populate animated skill bars ---
             const skillsContainer = document.getElementById('skills-container');
-            portfolioData.skills.forEach((skill, index) => {
+            portfolioData.skills.forEach((skill, index) => { /* ... (Code is the same as previous version) ... */ 
                 const skillElement = document.createElement('div');
                 skillElement.className = 'animate-on-scroll fade-in-up';
                 skillElement.style.transitionDelay = `${index * 100}ms`;
@@ -633,17 +507,8 @@ I am always looking to learn and connect with professionals in the field.`
             const galleryGrid = document.getElementById('gallery-grid');
             const featuredItems = portfolioData.portfolio.slice(0, 6);
             
-            // Populate Featured Grid
-            featuredItems.forEach((item, index) => {
-                const el = createPortfolioItem(item, index);
-                portfolioContainer.appendChild(el);
-            });
-            
-            // Populate Full Gallery Grid
-            portfolioData.portfolio.forEach((item, index) => {
-                const el = createPortfolioItem(item, index);
-                galleryGrid.appendChild(el);
-            });
+            featuredItems.forEach((item, index) => { portfolioContainer.appendChild(createPortfolioItem(item, index)); });
+            portfolioData.portfolio.forEach((item, index) => { galleryGrid.appendChild(createPortfolioItem(item, index)); });
             
             // --- Gallery Page Open/Close Listeners ---
             const galleryPage = document.getElementById('gallery-page');
@@ -651,12 +516,12 @@ I am always looking to learn and connect with professionals in the field.`
             const openGalleryBtnMobile = document.getElementById('gallery-page-btn-mobile');
             const closeGalleryBtn = document.getElementById('gallery-close-btn');
 
-            const openGallery = () => {
+            const openGallery = () => { /* ... (Code is the same as previous version) ... */ 
                 galleryPage.classList.add('is-open');
                 document.body.style.overflow = 'hidden';
                 window.scrollTo(0, 0);
             };
-            const closeGallery = () => {
+            const closeGallery = () => { /* ... (Code is the same as previous version) ... */ 
                 galleryPage.classList.remove('is-open');
                 document.body.style.overflow = 'auto';
             };
@@ -669,30 +534,17 @@ I am always looking to learn and connect with professionals in the field.`
             lightboxCloseBtn.addEventListener('click', closeLightbox);
             lightboxPrevBtn.addEventListener('click', showPrevItem);
             lightboxNextBtn.addEventListener('click', showNextItem);
-            
-            // Close lightbox on background click
-            lightboxEl.addEventListener('click', (e) => {
-                if (e.target === lightboxEl) {
-                    closeLightbox();
-                }
-            });
-            
-            // Keyboard navigation
+            lightboxEl.addEventListener('click', (e) => { if (e.target === lightboxEl) closeLightbox(); });
             document.addEventListener('keydown', (e) => {
                 if (!lightboxEl.classList.contains('is-open')) return;
-                
-                if (e.key === 'Escape') {
-                    closeLightbox();
-                } else if (e.key === 'ArrowRight') {
-                    showNextItem();
-                } else if (e.key === 'ArrowLeft') {
-                    showPrevItem();
-                }
+                if (e.key === 'Escape') closeLightbox();
+                else if (e.key === 'ArrowRight') showNextItem();
+                else if (e.key === 'ArrowLeft') showPrevItem();
             });
 
-            // --- 3. SCROLL ANIMATION OBSERVER ---
+            // --- Scroll Animation Observer ---
             const scrollElements = document.querySelectorAll('.animate-on-scroll');
-            const observer = new IntersectionObserver((entries) => {
+            const observer = new IntersectionObserver((entries) => { /* ... (Code is the same as previous version) ... */ 
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('is-visible');
@@ -702,27 +554,22 @@ I am always looking to learn and connect with professionals in the field.`
                         }
                     }
                 });
-            }, {
-                threshold: 0.1
-            });
+            }, { threshold: 0.1 });
             scrollElements.forEach(el => observer.observe(el));
 
-            // --- 4. HEADER SHADOW & BACK-TO-TOP BUTTON ---
+            // --- Header Shadow & Back-to-Top Button ---
             const header = document.getElementById('main-header');
             const backToTopBtn = document.getElementById('back-to-top');
-            window.addEventListener('scroll', () => {
+            window.addEventListener('scroll', () => { /* ... (Code is the same as previous version) ... */ 
                 header.classList.toggle('scrolled', window.scrollY > 50);
                 backToTopBtn.classList.toggle('is-visible', window.scrollY > 300);
             });
 
-            // --- 5. HERO TYPING EFFECT ---
+            // --- Hero Typing Effect ---
             const heroTitleEl = document.getElementById('hero-title');
             const titles = portfolioData.hero.titles;
-            let titleIndex = 0;
-            let charIndex = 0;
-            let isDeleting = false;
-
-            function typeEffect() {
+            let titleIndex = 0, charIndex = 0, isDeleting = false;
+            function typeEffect() { /* ... (Code is the same as previous version) ... */ 
                 const currentTitle = titles[titleIndex];
                 let typeSpeed = 150;
 
@@ -751,4 +598,3 @@ I am always looking to learn and connect with professionals in the field.`
 
 </body>
 </html>
-
